@@ -21,31 +21,38 @@ body {
 
 <body class="text-white">
 
+<!-- HEADER -->
 <header class="flex justify-between items-center p-4 border-b border-zinc-800">
 
     <div class="font-bold">
         SAM <span class="text-yellow-400">FINANCE</span>
     </div>
 
-    <button id="connectBtn" onclick="connectWallet()"
+    <button id="connectBtn"
+        onclick="connectWallet()"
         class="border border-yellow-400 text-yellow-400 px-3 py-1 rounded text-xs">
         CONNECT
     </button>
 
 </header>
 
+<!-- MAIN -->
 <main class="max-w-md mx-auto p-4">
 
+<!-- NATIVE BALANCE -->
+<div class="bg-zinc-900 p-3 rounded-xl mt-4 text-xs text-gray-400">
+    zkLTC (Native): <span id="nativeBal">0</span>
+</div>
+
 <!-- FROM -->
-<div class="bg-zinc-900 p-4 rounded-xl mt-5">
+<div class="bg-zinc-900 p-4 rounded-xl mt-3">
 
     <div class="flex justify-between text-xs text-gray-400">
         <span>From</span>
 
-        <select id="tokenA" onchange="updateUI()"
-            class="bg-black border border-zinc-700 text-xs p-1 rounded">
+        <select id="tokenA" class="bg-black border border-zinc-700 p-1 rounded text-xs">
             <option value="SAMFI">SAMFI</option>
-            <option value="WZK">zkLTC</option>
+            <option value="WZK">WzkLTC</option>
         </select>
 
     </div>
@@ -54,7 +61,7 @@ body {
         class="w-full mt-3 p-2 bg-black border border-zinc-700 rounded text-right text-xl"
         placeholder="0" />
 
-    <p id="bal1" class="text-xs text-gray-500 mt-2">0</p>
+    <p id="bal1" class="text-xs text-gray-500 mt-2">0 SAMFI</p>
 
 </div>
 
@@ -69,9 +76,8 @@ body {
     <div class="flex justify-between text-xs text-gray-400">
         <span>To</span>
 
-        <select id="tokenB" onchange="updateUI()"
-            class="bg-black border border-zinc-700 text-xs p-1 rounded">
-            <option value="WZK">zkLTC</option>
+        <select id="tokenB" class="bg-black border border-zinc-700 p-1 rounded text-xs">
+            <option value="WZK">WzkLTC</option>
             <option value="SAMFI">SAMFI</option>
         </select>
 
@@ -81,22 +87,20 @@ body {
         class="w-full mt-3 p-2 bg-black border border-zinc-700 rounded text-right text-xl"
         placeholder="0" />
 
-    <p id="bal2" class="text-xs text-gray-500 mt-2">0</p>
+    <p id="bal2" class="text-xs text-gray-500 mt-2">0 WzkLTC</p>
 
 </div>
 
+<!-- SWAP -->
 <button onclick="executeSwap()"
     class="w-full mt-5 bg-yellow-500 text-black font-bold py-3 rounded-xl">
-
     SWAP
-
 </button>
 
+<!-- LOG -->
 <div id="log"
     class="hidden mt-4 bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-xs h-32 overflow-y-auto">
-
     [SYSTEM READY]
-
 </div>
 
 </main>
@@ -104,17 +108,13 @@ body {
 <script>
 
 // ======================
-// CONFIG
+// CONTRACT CONFIG
 // ======================
 const ROUTER = "0xe351c47c3b96844F46e9808a7D5bBa8101BfFB57";
 const SAMFI  = "0xAC9E151b4048b179Be0CbB23C0c6FC29419061a7";
 const WZK    = "0x60A84eBC3483fEFB251B76Aea5B8458026Ef4bea";
 
 let signer;
-
-// ======================
-let tokenA = "SAMFI";
-let tokenB = "WZK";
 
 // ======================
 // ABI
@@ -125,12 +125,12 @@ const erc20Abi = [
 ];
 
 const routerAbi = [
-"function swapExactTokensForTokens(uint amountIn,uint amountOutMin,address[] path,address to,uint deadline)",
-"function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint amountIn,uint amountOutMin,address[] path,address to,uint deadline)"
+"function swapExactTokensForTokens(uint,uint,address[],address,uint)",
+"function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint,uint,address[],address,uint)"
 ];
 
 // ======================
-// WALLET
+// WALLET CONNECT
 // ======================
 async function connectWallet() {
 
@@ -145,10 +145,25 @@ document.getElementById("connectBtn").innerText =
 addr.slice(0,6) + "..." + addr.slice(-4);
 
 loadBalances();
+loadNative();
 }
 
 // ======================
-// BALANCE
+// NATIVE zkLTC (RPC LITVM)
+// ======================
+async function loadNative() {
+
+const provider = new ethers.BrowserProvider(window.ethereum);
+const user = await signer.getAddress();
+
+const bal = await provider.getBalance(user);
+
+document.getElementById("nativeBal").innerText =
+parseFloat(ethers.formatEther(bal)).toFixed(4) + " zkLTC";
+}
+
+// ======================
+// ERC20 BALANCE
 // ======================
 async function loadBalances() {
 
@@ -164,32 +179,26 @@ document.getElementById("bal1").innerText =
 parseFloat(ethers.formatEther(b1)).toFixed(4) + " SAMFI";
 
 document.getElementById("bal2").innerText =
-parseFloat(ethers.formatEther(b2)).toFixed(4) + " zkLTC";
+parseFloat(ethers.formatEther(b2)).toFixed(4) + " WzkLTC";
 }
 
 // ======================
-// SWAP UI LOGIC
+// SWAP UI
 // ======================
 function swapTokens() {
 
-let temp = tokenA;
-tokenA = tokenB;
-tokenB = temp;
+let a = document.getElementById("tokenA").value;
+let b = document.getElementById("tokenB").value;
 
-document.getElementById("tokenA").value = tokenA;
-document.getElementById("tokenB").value = tokenB;
-
-updateUI();
-}
-
-function updateUI() {
+document.getElementById("tokenA").value = b;
+document.getElementById("tokenB").value = a;
 
 document.getElementById("out").value =
 document.getElementById("amount").value;
 }
 
 // ======================
-// INPUT SYNC
+// INPUT
 // ======================
 document.addEventListener("input", (e) => {
 
@@ -200,7 +209,7 @@ document.getElementById("out").value = e.target.value;
 });
 
 // ======================
-// SWAP CORE
+// SWAP EXECUTE
 // ======================
 async function executeSwap() {
 
@@ -215,10 +224,13 @@ try {
 
 const user = await signer.getAddress();
 
-const tokenIn = tokenA === "SAMFI" ? SAMFI : WZK;
-const tokenOut = tokenB === "SAMFI" ? SAMFI : WZK;
+const tokenInVal = document.getElementById("tokenA").value;
+const tokenOutVal = document.getElementById("tokenB").value;
 
-log.innerHTML += "<br>[1] Approve...";
+const tokenIn = tokenInVal === "SAMFI" ? SAMFI : WZK;
+const tokenOut = tokenOutVal === "SAMFI" ? SAMFI : WZK;
+
+log.innerHTML += "<br>Approve...";
 
 const token = new ethers.Contract(tokenIn, erc20Abi, signer);
 
@@ -229,7 +241,7 @@ ethers.parseEther(amount.toString())
 
 await tx1.wait();
 
-log.innerHTML += "<br>[2] Swap...";
+log.innerHTML += "<br>Swap...";
 
 const router = new ethers.Contract(ROUTER, routerAbi, signer);
 
@@ -263,14 +275,16 @@ deadline
 
 await tx.wait();
 
-log.innerHTML += "<br>✅ SUCCESS";
+log.innerHTML += "<br>SUCCESS";
 
 loadBalances();
+loadNative();
 
 } catch (e) {
 
 console.log(e);
-log.innerHTML += "<br>❌ FAILED";
+log.innerHTML += "<br>FAILED";
+
 }
 
 }
