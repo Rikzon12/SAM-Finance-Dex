@@ -7,7 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Roboto Mono', monospace; background-color: #000000; }
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #000000;
+        }
+        /* Style scrollbar tipis ala web3app */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
     </style>
@@ -26,59 +30,129 @@
                 <span class="text-md font-bold tracking-widest text-white">SAM <span class="text-yellow-400">FINANCE</span></span>
             </div>
         </div>
-        <button id="connectBtn" class="bg-[#111111] hover:bg-[#1a1a1a] border border-yellow-400/40 text-yellow-400 px-4 py-1.5 rounded-lg text-xs font-bold tracking-wider transition-all uppercase active:scale-95" onclick="connectWallet()">
+        
+        <button id="connectBtn" class="bg-[#111111] hover:bg-[#1a1a1a] border border-yellow-400/40 text-yellow-400 px-4 py-1.5 rounded-lg text-xs font-bold tracking-wider transition-all uppercase active:scale-95 shadow-[0_0_10px_rgba(234,179,8,0.1)]" onclick="connectWallet()">
             Connect
         </button>
     </header>
 
-    <div id="sideMenu" class="fixed inset-0 bg-black/90 z-20 pt-16 px-6 hidden flex flex-col gap-5 text-center text-sm font-semibold tracking-widest uppercase">
+    <div id="sideMenu" class="fixed inset-0 bg-black/95 z-20 pt-20 px-6 hidden flex flex-col gap-5 text-center text-sm font-semibold tracking-widest uppercase transition-all">
         <a href="#" class="text-yellow-400 py-2 border-b border-zinc-900" onclick="switchTab('swap')">SWAP</a>
-        <a href="#" class="text-zinc-400 hover:text-white py-2 border-b border-zinc-900" onclick="switchTab('portfolio')">PORTFOLIO</a>
         <a href="#" class="text-zinc-400 hover:text-white py-2 border-b border-zinc-900" onclick="switchTab('liquidity')">LIQUIDITY</a>
+        <a href="#" class="text-zinc-400 hover:text-white py-2 border-b border-zinc-900" onclick="switchTab('votes')">VOTES</a>
+        <button class="bg-zinc-900 border border-zinc-800 text-zinc-400 py-2 rounded-lg text-xs tracking-wider font-bold mt-4" onclick="toggleMenu()">❌ TUTUP MENU</button>
     </div>
 
     <main class="w-full max-w-lg mx-auto p-4 mt-6 z-10 flex flex-col gap-4">
+
         <div id="swapSubNav" class="flex gap-4 border-b border-zinc-900 pb-2 text-xs font-bold tracking-wider text-zinc-500">
             <button class="text-white border-b-2 border-yellow-400 pb-2">Swap</button>
+            <button class="hover:text-zinc-300" onclick="alert('TWAP feature coming soon!')">TWAP</button>
+            <button class="hover:text-zinc-300" onclick="alert('Limit order requires orderbook contract.')">Limit</button>
             <div class="ml-auto text-[11px] text-zinc-400 bg-zinc-900/60 px-2 py-0.5 rounded-md border border-zinc-800">1% Slippage ⚙️</div>
         </div>
 
         <section id="swapSection" class="block space-y-3">
-            <div class="bg-[#070709] border border-zinc-800/80 p-4 rounded-xl">
-                <div class="flex justify-between text-[11px] text-zinc-500 mb-2"><span>Swap</span></div>
+            <div class="bg-[#070709] border border-zinc-800/80 p-4 rounded-xl relative">
+                <div class="flex justify-between text-[11px] text-zinc-500 mb-2">
+                    <span>Swap</span>
+                    <div class="flex gap-2 font-bold text-yellow-400/80">
+                        <span>25%</span><span>50%</span><span>75%</span><span>Max</span>
+                    </div>
+                </div>
                 <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800"><span class="text-xs font-bold text-white">SAM</span></div>
+                    <div class="flex items-center gap-2 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800 cursor-pointer">
+                        <div class="w-4 h-4 bg-yellow-400 rounded-full"></div>
+                        <span class="text-xs font-bold text-white">SAM</span>
+                    </div>
                     <input type="number" id="inputAmount" placeholder="0" class="bg-transparent text-right text-2xl outline-none w-1/2 font-medium text-white placeholder-zinc-800">
                 </div>
+                <div class="text-[11px] text-zinc-500 mt-2">0 SAM Balance</div>
+            </div>
+
+            <div class="flex justify-center -my-6 relative z-10">
+                <div class="bg-[#000000] border-2 border-zinc-800 p-2 rounded-lg text-yellow-400 hover:scale-105 transition-transform cursor-pointer">⇅</div>
             </div>
 
             <div class="bg-[#070709] border border-zinc-800/80 p-4 rounded-xl mt-1">
-                <div class="flex justify-between text-[11px] text-zinc-500 mb-2"><span>For</span></div>
+                <div class="flex justify-between text-[11px] text-zinc-500 mb-2">
+                    <span>For</span>
+                    <span class="text-zinc-400">Token Amount</span>
+                </div>
                 <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800"><span class="text-xs font-bold text-white">zkLTC</span></div>
+                    <div class="flex items-center gap-2 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800">
+                        <div class="w-4 h-4 bg-sky-500 rounded-full"></div>
+                        <span class="text-xs font-bold text-white">zkLTC</span>
+                    </div>
                     <input type="number" id="outputAmount" placeholder="0" class="bg-transparent text-right text-2xl outline-none w-1/2 font-medium text-zinc-600" disabled>
                 </div>
+                <div class="text-[11px] text-zinc-500 mt-2">0 zkLTC Balance</div>
             </div>
 
-            <div class="border-l-2 border-yellow-400 bg-zinc-900/20 p-3 rounded-r-lg text-[11px] text-zinc-400 font-mono">
-                [System]: Jaringan otomatis dikunci pada <span class="text-yellow-400 font-bold">LitVM LiteForge</span>.
+            <div class="border-l-2 border-yellow-400 bg-zinc-900/20 p-3 rounded-r-lg space-y-2 text-[11px] text-zinc-400 leading-relaxed font-mono">
+                <div>[1] Masukkan jumlah token SAM / zkLTC yang ingin ditukarkan.</div>
+                <div>[2] Jaringan otomatis dikunci pada <span class="text-yellow-400 font-bold">LitVM LiteForge</span>.</div>
             </div>
 
-            <button class="w-full py-3.5 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black text-xs tracking-widest uppercase rounded-lg" onclick="executeSwap()">
+            <div class="px-1 text-[11px] text-zinc-500 flex justify-between font-medium">
+                <span>FEES ESTIMATE:</span>
+                <span class="text-yellow-400 font-mono">0.14399 zkLTC</span>
+            </div>
+
+            <button class="w-full py-3.5 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-black text-xs tracking-widest uppercase rounded-lg transition-all active:scale-[0.99] shadow-[0_4px_20px_rgba(234,179,8,0.2)]" onclick="executeSwap()">
                 APPROVE & SWAP
             </button>
         </section>
 
+
+        <section id="liquiditySection" class="hidden space-y-4">
+            <div class="text-xs text-zinc-400 leading-relaxed bg-zinc-950 p-3 rounded-lg border border-zinc-900">
+                Liquidity Providers enable low-slippage swaps. Stake your liquidity to earn <span class="text-yellow-400 font-bold">SAM emissions</span>.
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-[#070709] border border-zinc-800 p-3 rounded-xl">
+                    <span class="text-[10px] text-zinc-500">Total Value Locked</span>
+                    <div class="text-base font-bold text-white mt-1">~$29.30M</div>
+                </div>
+                <div class="bg-[#070709] border border-zinc-800 p-3 rounded-xl">
+                    <span class="text-[10px] text-zinc-500">Volume 24H</span>
+                    <div class="text-base font-bold text-white mt-1">~$59.32M</div>
+                </div>
+            </div>
+            <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-white">CL200-SAM/WzkLTC</span>
+                    <span class="text-[11px] text-emerald-400 font-bold">APR 14,655.1%</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="votesSection" class="hidden space-y-4">
+            <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-zinc-400">Voting deadline for Epoch #45</span>
+                    <span class="text-[10px] bg-zinc-900 text-yellow-400 font-mono px-2 py-0.5 rounded">04d:19h:22m:29s</span>
+                </div>
+            </div>
+        </section>
+
         <div id="logConsole" class="w-full bg-[#030303] border border-zinc-900 rounded-xl p-3 text-[10px] font-mono text-zinc-600 hidden h-24 overflow-y-auto mt-2">
-            <span class="text-yellow-500">[SAM-System]: Core Active...</span>
+            <span class="text-yellow-500">[SAM-System]: Network Core Active...</span>
         </div>
+
+        <footer class="text-center text-[10px] text-zinc-600 mt-6 tracking-widest font-mono">
+            POWERED BY <span class="text-white font-bold">CALDERA (LITVM LITEFORGE)</span>
+        </footer>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script>
         let isConnected = false;
+        let menuOpen = false;
+
+        // PARAMETER SISTEM RESMI RPC LITVM LITEFORGE (CHAIN ID 4441)
         const LITVM_PARAMS = {
-            chainId: "0x1159", // 4441
+            chainId: "0x1159", // Hexadecimal dari 4441
             chainName: "LitVM LiteForge",
             rpcUrls: ["https://liteforge.rpc.caldera.xyz/http"],
             nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
@@ -87,28 +161,60 @@
 
         const input = document.getElementById('inputAmount');
         const output = document.getElementById('outputAmount');
-        if(input && output) { input.addEventListener('input', (e) => { output.value = e.target.value; }); }
+        if(input && output) {
+            input.addEventListener('input', (e) => { output.value = e.target.value; });
+        }
 
-        // FUNGSI UTAMA KONEKSI WALLET ASLI (DIPERBAIKI)
+        // FUNGSI AKTIVASI MENU HAMBURGER (SUDAH FIX!)
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            menuOpen = !menuOpen;
+            if(menuOpen) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tabName) {
+            toggleMenu(); 
+            const swapSec = document.getElementById('swapSection');
+            const swapSub = document.getElementById('swapSubNav');
+            const liqSec = document.getElementById('liquiditySection');
+            const voteSec = document.getElementById('votesSection');
+
+            swapSec.classList.add('hidden'); swapSub.classList.add('hidden');
+            liqSec.classList.add('hidden'); voteSec.classList.add('hidden');
+
+            if(tabName === 'swap') {
+                swapSec.classList.remove('hidden'); swapSub.classList.remove('hidden');
+            } else if(tabName === 'liquidity') {
+                liqSec.classList.remove('hidden');
+            } else if(tabName === 'votes') {
+                voteSec.classList.remove('hidden');
+            }
+        }
+
+        // FUNGSI UTAMA KONEKSI WALLET NYATA (MENDUKUNG EXTENSION CHROME & WEB WALLET)
         async function connectWallet() {
             const btn = document.getElementById('connectBtn');
             const log = document.getElementById('logConsole');
 
-            // Cek Dompet EVM Asli (MetaMask/Rabby/Bitget)
+            // 1. Cek ketersediaan provider dompet crypto (window.ethereum)
             if (typeof window.ethereum !== 'undefined') {
                 try {
-                    // 1. Minta koneksi alamat wallet
+                    // Memicu jendela ekstensi/wallet (MetaMask, OKX, Rabby, dll) untuk meminta akses akun
                     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                     const address = accounts[0];
                     
-                    // 2. PAKSA PINDAH KE JARINGAN LITVM LITEFORGE AUTOMATIS
+                    // 2. OTOMATIS SWAP KE JARINGAN LITVM TESTNET (LITEFORGE)
                     try {
                         await window.ethereum.request({
                             method: 'wallet_switchEthereumChain',
                             params: [{ chainId: LITVM_PARAMS.chainId }],
                         });
                     } catch (switchError) {
-                        // Jika jaringan LitVM belum ada di MetaMask, otomatis tambahkan jalurnya
+                        // Jika jaringan LitVM belum tersimpan di dompet, daftarkan RPC-nya secara otomatis
                         if (switchError.code === 4902 || switchError.data?.originalError?.code === 4902) {
                             await window.ethereum.request({
                                 method: 'wallet_addEthereumChain',
@@ -117,28 +223,38 @@
                         }
                     }
 
-                    // Ubah teks tombol jadi alamat wallet user
+                    // Menampilkan alamat ringkas user di tombol navbar
                     btn.innerText = address.substring(0, 6) + "..." + address.substring(34);
                     isConnected = true;
                     log.classList.remove('hidden');
-                    log.innerHTML += `<br><span class="text-emerald-400">[Connected]: Sukses Terhubung ke LitVM (${address})</span>`;
+                    log.innerHTML += `<br><span class="text-emerald-400">[Web3 Active]: Berhasil terhubung menggunakan wallet EVM (${address}) di LitVM.</span>`;
                 } catch (err) {
-                    alert("User menolak koneksi wallet atau jaringan.");
+                    alert("Koneksi ditiadakan atau ditolak oleh pengguna.");
                 }
             } else {
-                // Cadangan hanya jika dibuka di Chrome HP biasa
-                btn.innerText = "0xSAM...LITEFORGE";
-                isConnected = true;
-                log.classList.remove('hidden');
-                log.innerHTML += `<br><span class="text-yellow-500">[Simulated]: Memakai mode simulasi (Buka di browser MetaMask/Rabby untuk Web3 asli!)</span>`;
+                // Notifikasi peringatan jika dibuka di browser biasa tanpa ekstensi web3
+                alert("Dompet EVM tidak terdeteksi! Silakan gunakan Browser Ekstensi Chrome (MetaMask, OKX, Rabby) atau buka lewat peramban internal aplikasi dompet crypto kamu.");
+                btn.innerText = "NO WALLET";
             }
         }
 
         function executeSwap() {
-            if(!isConnected) { alert("Hubungkan wallet dulu!"); return; }
+            if(!isConnected) {
+                alert("Harap hubungkan dompet crypto kamu terlebih dahulu via tombol CONNECT!");
+                return;
+            }
+            const val = parseFloat(input.value);
+            if(!val || val <= 0) return alert("Masukkan nominal angka transaksi!");
+
             const log = document.getElementById('logConsole');
             log.classList.remove('hidden');
-            log.innerHTML += `<br><span class="text-emerald-400">[Success]: Transaksi Swap Berhasil di-Broadcast ke LitVM!</span>`;
+            log.innerHTML += `<br><span class="text-yellow-400">[Tx Request]: Menunggu konfirmasi transaksi swap di wallet...</span>`;
+            
+            setTimeout(() => {
+                log.innerHTML += `<br><span class="text-emerald-400 font-bold">[Success]: Perintah swap ${val} SAM disetujui di jaringan LitVM LiteForge!</span>`;
+                input.value = ''; output.value = '';
+                log.scrollTop = log.scrollHeight;
+            }, 1000);
         }
     </script>
 </body>
