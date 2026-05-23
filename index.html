@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <title>SAM Finance DEX</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -15,23 +16,22 @@
 body {
     font-family: 'Roboto Mono', monospace;
     background: #000;
-    color: #e5e7eb;
 }
 </style>
 </head>
 
-<body>
+<body class="text-white">
 
 <!-- HEADER -->
-<header class="w-full bg-[#050505] border-b border-[#151515] px-4 py-3 flex justify-between items-center">
+<header class="flex justify-between items-center p-4 border-b border-zinc-800">
 
-    <div class="font-bold">
+    <div class="font-bold text-white">
         SAM <span class="text-yellow-400">FINANCE</span>
     </div>
 
     <button id="connectBtn"
         onclick="connectWallet()"
-        class="bg-[#111] border border-yellow-400 text-yellow-400 px-4 py-2 rounded text-xs">
+        class="border border-yellow-400 text-yellow-400 px-3 py-1 rounded text-xs">
 
         CONNECT
 
@@ -40,47 +40,46 @@ body {
 </header>
 
 <!-- MAIN -->
-<main class="max-w-md mx-auto p-4 mt-6">
+<main class="max-w-md mx-auto p-4">
 
     <!-- FROM -->
-    <div class="bg-[#0b0b0b] border border-zinc-800 p-4 rounded-xl">
+    <div class="bg-zinc-900 p-4 rounded-xl mt-5">
 
         <div class="flex justify-between text-xs text-gray-400">
             <span>From</span>
             <span>SAMFI</span>
         </div>
 
-        <input id="inputAmount"
-            type="number"
-            class="w-full mt-3 bg-black border border-zinc-700 p-3 rounded text-right text-xl"
-            placeholder="0"/>
+        <input id="amount" type="number"
+            class="w-full mt-3 p-2 bg-black border border-zinc-700 rounded text-right text-xl"
+            placeholder="0" />
 
-        <p id="balA" class="text-xs text-gray-500 mt-2">Loading balance...</p>
+        <p id="bal1" class="text-xs text-gray-500 mt-2">0 SAMFI</p>
 
     </div>
 
     <div class="text-center text-yellow-400 my-3">⇅</div>
 
     <!-- TO -->
-    <div class="bg-[#0b0b0b] border border-zinc-800 p-4 rounded-xl">
+    <div class="bg-zinc-900 p-4 rounded-xl">
 
         <div class="flex justify-between text-xs text-gray-400">
             <span>To</span>
-            <span>zkLTC</span>
+            <span>WzkLTC</span>
         </div>
 
         <input disabled
-            id="outputAmount"
-            class="w-full mt-3 bg-black border border-zinc-700 p-3 rounded text-right text-xl"
-            placeholder="0"/>
+            id="out"
+            class="w-full mt-3 p-2 bg-black border border-zinc-700 rounded text-right text-xl"
+            placeholder="0" />
 
-        <p id="balB" class="text-xs text-gray-500 mt-2">Loading balance...</p>
+        <p id="bal2" class="text-xs text-gray-500 mt-2">0 WzkLTC</p>
 
     </div>
 
-    <!-- SWAP BUTTON -->
+    <!-- SWAP -->
     <button onclick="executeSwap()"
-        class="w-full mt-5 bg-yellow-500 text-black font-bold py-4 rounded-xl">
+        class="w-full mt-5 bg-yellow-500 text-black font-bold py-3 rounded-xl">
 
         SWAP
 
@@ -88,7 +87,7 @@ body {
 
     <!-- LOG -->
     <div id="log"
-        class="hidden mt-4 bg-[#0b0b0b] border border-zinc-800 p-3 rounded-xl text-xs h-32 overflow-y-auto">
+        class="hidden mt-4 bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-xs h-32 overflow-y-auto">
 
         [SYSTEM READY]
 
@@ -99,10 +98,11 @@ body {
 <script>
 
 // ======================
-// ADDRESS CONFIG
+// ADDRESS
 // ======================
-const SAMFI = "0xAC9E151b4048b179Be0CbB23C0c6FC29419061a7";
-const LP    = "0xbd5588aF3470B6bEbD969B82497c2a0F54168DD5";
+const ROUTER = "0xe351c47c3b96844F46e9808a7D5bBa8101BfFB57";
+const SAMFI  = "0xAC9E151b4048b179Be0CbB23C0c6FC29419061a7";
+const WZK    = "0x60A84eBC3483fEFB251B76Aea5B8458026Ef4bea";
 
 let signer;
 
@@ -110,17 +110,17 @@ let signer;
 // ABI
 // ======================
 const erc20Abi = [
-    "function balanceOf(address) view returns(uint)",
     "function approve(address,uint) returns(bool)",
-    "function decimals() view returns(uint8)"
+    "function balanceOf(address) view returns(uint)"
 ];
 
-const lpAbi = [
-    "function swap(uint amount0Out,uint amount1Out,address to)"
+const routerAbi = [
+    "function swapExactTokensForTokens(uint amountIn,uint amountOutMin,address[] path,address to,uint deadline)",
+    "function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint amountIn,uint amountOutMin,address[] path,address to,uint deadline)"
 ];
 
 // ======================
-// CONNECT WALLET
+// CONNECT
 // ======================
 async function connectWallet() {
 
@@ -135,27 +135,29 @@ async function connectWallet() {
     const addr = await signer.getAddress();
 
     document.getElementById("connectBtn").innerText =
-        addr.slice(0,6)+"..."+addr.slice(-4);
+        addr.slice(0,6) + "..." + addr.slice(-4);
 
     loadBalances();
 }
 
 // ======================
-// LOAD BALANCE
+// BALANCE
 // ======================
 async function loadBalances() {
 
     const user = await signer.getAddress();
 
-    const token = new ethers.Contract(SAMFI, erc20Abi, signer);
+    const sam = new ethers.Contract(SAMFI, erc20Abi, signer);
+    const wzk = new ethers.Contract(WZK, erc20Abi, signer);
 
-    const bal = await token.balanceOf(user);
+    const b1 = await sam.balanceOf(user);
+    const b2 = await wzk.balanceOf(user);
 
-    document.getElementById("balA").innerText =
-        parseFloat(ethers.formatEther(bal)).toFixed(4) + " SAMFI Balance";
+    document.getElementById("bal1").innerText =
+        parseFloat(ethers.formatEther(b1)).toFixed(4) + " SAMFI";
 
-    document.getElementById("balB").innerText =
-        "zkLTC Balance (via wallet)";
+    document.getElementById("bal2").innerText =
+        parseFloat(ethers.formatEther(b2)).toFixed(4) + " WzkLTC";
 }
 
 // ======================
@@ -163,54 +165,79 @@ async function loadBalances() {
 // ======================
 document.addEventListener("input", (e) => {
 
-    if (e.target.id === "inputAmount") {
-        document.getElementById("outputAmount").value = e.target.value;
+    if (e.target.id === "amount") {
+        document.getElementById("out").value = e.target.value;
     }
 
 });
 
 // ======================
-// SWAP FUNCTION
+// SWAP CORE
 // ======================
 async function executeSwap() {
+
+    const amount = document.getElementById("amount").value;
+    const log = document.getElementById("log");
+
+    log.classList.remove("hidden");
 
     if (!signer) {
         alert("Connect wallet dulu");
         return;
     }
 
-    const amount = document.getElementById("inputAmount").value;
-    const log = document.getElementById("log");
-
-    log.classList.remove("hidden");
-
     if (!amount || amount <= 0) {
-        alert("Masukkan jumlah");
+        alert("Input jumlah");
         return;
     }
 
     try {
 
+        const user = await signer.getAddress();
+
         log.innerHTML += "<br>[1] Approve SAMFI...";
 
         const token = new ethers.Contract(SAMFI, erc20Abi, signer);
 
-        const tx1 = await token.approve(LP, ethers.parseEther(amount.toString()));
-        await tx1.wait();
-
-        log.innerHTML += "<br>[2] Swap executing...";
-
-        const lp = new ethers.Contract(LP, lpAbi, signer);
-
-        const user = await signer.getAddress();
-
-        const tx2 = await lp.swap(
-            0,
-            ethers.parseEther(amount.toString()),
-            user
+        const tx1 = await token.approve(
+            ROUTER,
+            ethers.parseEther(amount.toString())
         );
 
-        await tx2.wait();
+        await tx1.wait();
+
+        log.innerHTML += "<br>[2] Swap via Router...";
+
+        const router = new ethers.Contract(ROUTER, routerAbi, signer);
+
+        const path = [SAMFI, WZK];
+
+        const deadline = Math.floor(Date.now() / 1000) + 60 * 10;
+
+        let tx;
+
+        try {
+
+            tx = await router.swapExactTokensForTokens(
+                ethers.parseEther(amount.toString()),
+                0,
+                path,
+                user,
+                deadline
+            );
+
+        } catch (e) {
+
+            tx = await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                ethers.parseEther(amount.toString()),
+                0,
+                path,
+                user,
+                deadline
+            );
+        }
+
+        await tx.wait();
 
         log.innerHTML += "<br>✅ SWAP SUCCESS";
 
@@ -220,7 +247,7 @@ async function executeSwap() {
 
         console.log(e);
 
-        log.innerHTML += "<br>❌ SWAP FAILED (LP butuh router / AMM logic)";
+        log.innerHTML += "<br>❌ SWAP FAILED (cek liquidity / router)";
     }
 }
 
