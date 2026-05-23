@@ -4,13 +4,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>SAM Finance - LitVM DEX</title>
+    <title>SAM Finance - SAMFI DEX</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
         body {
@@ -31,590 +28,195 @@
 
 <body class="min-h-screen text-[#e5e7eb] overflow-x-hidden pb-10">
 
-    <!-- HEADER -->
-    <header
-        class="w-full bg-[#050505] border-b border-[#151515] px-4 py-3 flex justify-between items-center sticky top-0 z-50">
+<!-- HEADER -->
+<header class="w-full bg-[#050505] border-b border-[#151515] px-4 py-3 flex justify-between items-center sticky top-0 z-50">
 
-        <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3">
 
-            <button onclick="toggleMenu()" class="text-yellow-400">
+        <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin"></div>
 
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 6h16M4 12h16M4 18h16"></path>
-
-                </svg>
-
-            </button>
-
-            <div class="flex items-center gap-2">
-
-                <div
-                    class="w-6 h-6 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin flex items-center justify-center">
-
-                    <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
-
-                </div>
-
-                <span class="font-bold tracking-widest text-white">
-                    SAM <span class="text-yellow-400">FINANCE</span>
-                </span>
-
-            </div>
-
+            <span class="font-bold tracking-widest text-white">
+                SAM <span class="text-yellow-400">FINANCE</span>
+            </span>
         </div>
-
-        <button id="connectBtn"
-            class="bg-[#111] border border-yellow-400/30 text-yellow-400 px-4 py-2 rounded-lg text-xs font-bold tracking-widest"
-            onclick="connectWallet()">
-
-            CONNECT
-
-        </button>
-
-    </header>
-
-    <!-- MENU -->
-    <div id="sideMenu"
-        class="fixed inset-0 bg-black/95 hidden z-40 pt-24 px-8 flex flex-col gap-6 text-center uppercase tracking-widest text-sm">
-
-        <a href="#" onclick="switchTab('swap')" class="text-yellow-400">
-            Swap
-        </a>
-
-        <a href="#" onclick="switchTab('liquidity')" class="text-zinc-400">
-            Liquidity
-        </a>
-
-        <a href="#" onclick="switchTab('votes')" class="text-zinc-400">
-            Votes
-        </a>
-
-        <button onclick="toggleMenu()"
-            class="mt-6 bg-zinc-900 border border-zinc-800 rounded-lg py-2 text-xs">
-
-            CLOSE MENU
-
-        </button>
 
     </div>
 
-    <!-- MAIN -->
-    <main class="w-full max-w-lg mx-auto p-4 mt-5">
+    <button id="connectBtn"
+        class="bg-[#111] border border-yellow-400/30 text-yellow-400 px-4 py-2 rounded-lg text-xs font-bold"
+        onclick="connectWallet()">
+        CONNECT
+    </button>
 
-        <!-- SUB NAV -->
-        <div id="swapSubNav"
-            class="flex gap-3 border-b border-zinc-900 pb-3 text-xs font-bold tracking-wider text-zinc-400">
+</header>
 
-            <button class="text-white border-b-2 border-yellow-400 pb-2">
-                SWAP
+<!-- MAIN -->
+<main class="w-full max-w-lg mx-auto p-4 mt-5">
+
+    <!-- SWAP -->
+    <section class="space-y-4 mt-4">
+
+        <!-- INPUT -->
+        <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl">
+
+            <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
+                <span>From</span>
+            </div>
+
+            <div class="flex justify-between items-center">
+
+                <div class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
+                    <div class="w-4 h-4 rounded-full bg-yellow-400"></div>
+                    <span class="font-bold text-xs">SAMFI</span>
+                </div>
+
+                <input id="inputAmount" type="number" placeholder="0"
+                    class="bg-transparent outline-none text-right text-2xl w-1/2">
+
+            </div>
+
+            <div id="samfiBalance" class="text-[11px] text-zinc-500 mt-2">
+                0 SAMFI Balance
+            </div>
+
+        </div>
+
+        <!-- SWITCH -->
+        <div class="flex justify-center">
+            <button onclick="reverseSwap()"
+                class="bg-black border border-zinc-800 text-yellow-400 px-3 py-2 rounded-lg">
+                ⇅
             </button>
+        </div>
 
-            <button>
-                TWAP
-            </button>
+        <!-- OUTPUT -->
+        <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl">
 
-            <button>
-                LIMIT
-            </button>
+            <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
+                <span>To</span>
+            </div>
 
-            <div
-                class="ml-auto bg-zinc-900 px-2 py-1 rounded border border-zinc-800 text-yellow-400 text-[10px]">
+            <div class="flex justify-between items-center">
 
-                1% SLIPPAGE
+                <div class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
+                    <div class="w-4 h-4 rounded-full bg-sky-500"></div>
+                    <span class="font-bold text-xs">zkLTC</span>
+                </div>
+
+                <input id="outputAmount" disabled
+                    class="bg-transparent outline-none text-right text-2xl w-1/2 text-zinc-500">
 
             </div>
 
         </div>
 
-        <!-- SWAP -->
-        <section id="swapSection" class="space-y-4 mt-4">
+        <!-- BUTTON -->
+        <button onclick="executeSwap()"
+            class="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black text-xs">
 
-            <!-- INPUT -->
-            <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl">
+            SWAP (SIMULATION)
 
-                <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
+        </button>
 
-                    <span>From</span>
+    </section>
 
-                    <div class="flex gap-2 text-yellow-400 font-bold">
+</main>
 
-                        <span>25%</span>
-                        <span>50%</span>
-                        <span>75%</span>
-                        <span>MAX</span>
+<!-- Ethers -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 
-                    </div>
+<script>
 
-                </div>
+let isConnected = false;
 
-                <div class="flex justify-between items-center">
+let tokenA = "SAMFI";
+let tokenB = "zkLTC";
 
-                    <div
-                        class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
+// CONTRACT
+const SAMFI_CONTRACT = "0xAC9E151b4048b179Be0CbB23C0c6FC29419061a7";
 
-                        <div id="tokenAColor" class="w-4 h-4 rounded-full bg-yellow-400"></div>
+const ERC20_ABI = [
+    "function balanceOf(address owner) view returns (uint256)",
+    "function decimals() view returns (uint8)"
+];
 
-                        <span id="tokenAName" class="font-bold text-xs">
-                            SAM
-                        </span>
+// NETWORK
+const LITVM_PARAMS = {
+    chainId: "0x1159",
+    chainName: "LitVM LiteForge",
+    rpcUrls: ["https://liteforge.rpc.caldera.xyz/http"],
+    nativeCurrency: {
+        name: "zkLTC",
+        symbol: "zkLTC",
+        decimals: 18
+    }
+};
 
-                    </div>
+// UI
+const input = document.getElementById("inputAmount");
+const output = document.getElementById("outputAmount");
 
-                    <input id="inputAmount" type="number" placeholder="0"
-                        class="bg-transparent outline-none text-right text-2xl w-1/2">
+input.addEventListener("input", (e) => {
+    output.value = e.target.value;
+});
 
-                </div>
+// GET BALANCE
+async function getSAMFIBalance(wallet, provider) {
+    const contract = new ethers.Contract(SAMFI_CONTRACT, ERC20_ABI, provider);
+    const bal = await contract.balanceOf(wallet);
+    const dec = await contract.decimals();
+    return ethers.formatUnits(bal, dec);
+}
 
-                <div id="tokenABalance" class="text-[11px] text-zinc-500 mt-2">
-                    0 SAM Balance
-                </div>
+// CONNECT
+async function connectWallet() {
 
-            </div>
+    const btn = document.getElementById("connectBtn");
 
-            <!-- SWITCH -->
-            <div class="flex justify-center -my-5 relative z-10">
+    if (!window.ethereum) {
+        alert("Install MetaMask");
+        return;
+    }
 
-                <button onclick="reverseSwap()"
-                    class="bg-black border-2 border-zinc-800 text-yellow-400 p-2 rounded-lg cursor-pointer hover:scale-110 transition-all">
+    const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts"
+    });
 
-                    ⇅
+    const wallet = accounts[0];
 
-                </button>
+    const provider = new ethers.BrowserProvider(window.ethereum);
 
-            </div>
+    const balance = await getSAMFIBalance(wallet, provider);
 
-            <!-- OUTPUT -->
-            <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl">
+    const short = wallet.slice(0,6) + "..." + wallet.slice(-4);
 
-                <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
+    btn.innerText = short;
 
-                    <span>To</span>
+    document.getElementById("samfiBalance").innerText =
+        balance + " SAMFI Balance";
 
-                    <span>Estimated</span>
+    isConnected = true;
+}
 
-                </div>
+// SWAP (still simulation)
+function executeSwap() {
 
-                <div class="flex justify-between items-center">
+    if (!isConnected) {
+        alert("Connect wallet first");
+        return;
+    }
 
-                    <div
-                        class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
+    alert("Swap simulation success (DEX router not connected yet)");
+}
 
-                        <div id="tokenBColor" class="w-4 h-4 rounded-full bg-sky-500"></div>
-
-                        <span id="tokenBName" class="font-bold text-xs">
-                            zkLTC
-                        </span>
-
-                    </div>
-
-                    <input id="outputAmount" type="number" disabled placeholder="0"
-                        class="bg-transparent outline-none text-right text-2xl w-1/2 text-zinc-500">
-
-                </div>
-
-                <div id="tokenBBalance" class="text-[11px] text-zinc-500 mt-2">
-                    0 zkLTC Balance
-                </div>
-
-            </div>
-
-            <!-- INFO -->
-            <div
-                class="border-l-2 border-yellow-400 bg-zinc-900/20 p-3 rounded-r-lg text-[11px] text-zinc-400 space-y-2">
-
-                <div>
-                    [1] Connect wallet untuk mulai swap.
-                </div>
-
-                <div>
-                    [2] Network otomatis LitVM LiteForge.
-                </div>
-
-            </div>
-
-            <!-- FEES -->
-            <div class="flex justify-between text-[11px] text-zinc-500">
-
-                <span>NETWORK FEE</span>
-
-                <span class="text-yellow-400">
-                    0.001 zkLTC
-                </span>
-
-            </div>
-
-            <!-- BUTTON -->
-            <button onclick="executeSwap()"
-                class="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black text-xs tracking-widest hover:opacity-90 transition-all">
-
-                APPROVE & SWAP
-
-            </button>
-
-        </section>
-
-        <!-- LIQUIDITY -->
-        <section id="liquiditySection" class="hidden mt-5">
-
-            <div class="bg-[#070709] border border-zinc-800 rounded-xl p-4">
-
-                <div class="text-sm text-zinc-300">
-                    Deposit liquidity to earn rewards.
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- VOTES -->
-        <section id="votesSection" class="hidden mt-5">
-
-            <div class="bg-[#070709] border border-zinc-800 rounded-xl p-4">
-
-                <div class="text-sm text-zinc-300">
-                    Voting system coming soon.
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- LOG -->
-        <div id="logConsole"
-            class="hidden mt-4 bg-[#030303] border border-zinc-900 rounded-xl p-3 text-[11px] font-mono text-zinc-500 h-28 overflow-y-auto">
-
-            [SAM-System]: Ready...
-
-        </div>
-
-    </main>
-
-    <!-- ETHERS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-
-    <script>
-
-        let isConnected = false;
-        let menuOpen = false;
-
-        let tokenA = "SAM";
-        let tokenB = "zkLTC";
-
-        // NETWORK
-        const LITVM_PARAMS = {
-
-            chainId: "0x1159",
-
-            chainName: "LitVM LiteForge",
-
-            rpcUrls: [
-                "https://liteforge.rpc.caldera.xyz/http"
-            ],
-
-            nativeCurrency: {
-                name: "zkLTC",
-                symbol: "zkLTC",
-                decimals: 18
-            },
-
-            blockExplorerUrls: [
-                "https://liteforge.explorer.caldera.xyz"
-            ]
-
-        };
-
-        // INPUT
-        const input = document.getElementById("inputAmount");
-        const output = document.getElementById("outputAmount");
-
-        input.addEventListener("input", (e) => {
-
-            output.value = e.target.value;
-
-        });
-
-        // MENU
-        function toggleMenu() {
-
-            const menu = document.getElementById("sideMenu");
-
-            menuOpen = !menuOpen;
-
-            if (menuOpen) {
-
-                menu.classList.remove("hidden");
-
-            } else {
-
-                menu.classList.add("hidden");
-
-            }
-
-        }
-
-        // TAB
-        function switchTab(tab) {
-
-            toggleMenu();
-
-            document.getElementById("swapSection").classList.add("hidden");
-            document.getElementById("swapSubNav").classList.add("hidden");
-
-            document.getElementById("liquiditySection").classList.add("hidden");
-
-            document.getElementById("votesSection").classList.add("hidden");
-
-            if (tab === "swap") {
-
-                document.getElementById("swapSection").classList.remove("hidden");
-
-                document.getElementById("swapSubNav").classList.remove("hidden");
-
-            }
-
-            if (tab === "liquidity") {
-
-                document.getElementById("liquiditySection").classList.remove("hidden");
-
-            }
-
-            if (tab === "votes") {
-
-                document.getElementById("votesSection").classList.remove("hidden");
-
-            }
-
-        }
-
-        // REVERSE SWAP
-        function reverseSwap() {
-
-            // TOKEN
-            const temp = tokenA;
-
-            tokenA = tokenB;
-
-            tokenB = temp;
-
-            // UI TOKEN
-            document.getElementById("tokenAName").innerText = tokenA;
-
-            document.getElementById("tokenBName").innerText = tokenB;
-
-            // COLOR
-            if (tokenA === "SAM") {
-
-                document.getElementById("tokenAColor").className =
-                    "w-4 h-4 rounded-full bg-yellow-400";
-
-                document.getElementById("tokenBColor").className =
-                    "w-4 h-4 rounded-full bg-sky-500";
-
-            } else {
-
-                document.getElementById("tokenAColor").className =
-                    "w-4 h-4 rounded-full bg-sky-500";
-
-                document.getElementById("tokenBColor").className =
-                    "w-4 h-4 rounded-full bg-yellow-400";
-
-            }
-
-            // BALANCE
-            document.getElementById("tokenABalance").innerText =
-                "0 " + tokenA + " Balance";
-
-            document.getElementById("tokenBBalance").innerText =
-                "0 " + tokenB + " Balance";
-
-            // VALUE
-            const tempValue = input.value;
-
-            input.value = output.value;
-
-            output.value = tempValue;
-
-        }
-
-        // CONNECT WALLET
-        async function connectWallet() {
-
-            const btn = document.getElementById("connectBtn");
-
-            const log = document.getElementById("logConsole");
-
-            try {
-
-                if (!window.ethereum) {
-
-                    alert("Gunakan MetaMask / OKX / Rabby");
-
-                    return;
-
-                }
-
-                // CONNECT
-                const accounts = await window.ethereum.request({
-                    method: "eth_requestAccounts"
-                });
-
-                const wallet = accounts[0];
-
-                // CHAIN
-                const currentChain = await window.ethereum.request({
-                    method: "eth_chainId"
-                });
-
-                // SWITCH
-                if (currentChain !== "0x1159") {
-
-                    try {
-
-                        await window.ethereum.request({
-
-                            method: "wallet_switchEthereumChain",
-
-                            params: [{
-                                chainId: "0x1159"
-                            }]
-
-                        });
-
-                    } catch (switchError) {
-
-                        // ADD NETWORK
-                        if (switchError.code === 4902) {
-
-                            await window.ethereum.request({
-
-                                method: "wallet_addEthereumChain",
-
-                                params: [LITVM_PARAMS]
-
-                            });
-
-                        } else {
-
-                            alert("Gagal switch network");
-
-                            return;
-
-                        }
-
-                    }
-
-                }
-
-                // PROVIDER
-                const provider = new ethers.BrowserProvider(window.ethereum);
-
-                // BALANCE
-                const balanceWei = await provider.getBalance(wallet);
-
-                const balance = ethers.formatEther(balanceWei);
-
-                // SHORT ADDRESS
-                const shortWallet =
-                    wallet.substring(0, 6) +
-                    "..." +
-                    wallet.substring(wallet.length - 4);
-
-                // BUTTON
-                btn.innerText = shortWallet;
-
-                // BALANCE UI
-                document.getElementById("tokenABalance").innerText =
-                    parseFloat(balance).toFixed(4) + " " + tokenA + " Balance";
-
-                document.getElementById("tokenBBalance").innerText =
-                    parseFloat(balance).toFixed(4) + " " + tokenB + " Balance";
-
-                // STATUS
-                isConnected = true;
-
-                // LOG
-                log.classList.remove("hidden");
-
-                log.innerHTML = `
-                <span class="text-emerald-400">
-                [CONNECTED]: ${shortWallet}
-                </span>
-
-                <br>
-
-                <span class="text-yellow-400">
-                [NETWORK]: LitVM LiteForge
-                </span>
-
-                <br>
-
-                <span class="text-sky-400">
-                [BALANCE]: ${parseFloat(balance).toFixed(4)} zkLTC
-                </span>
-                `;
-
-            } catch (err) {
-
-                console.log(err);
-
-                alert("Koneksi wallet gagal!");
-
-            }
-
-        }
-
-        // SWAP
-        function executeSwap() {
-
-            if (!isConnected) {
-
-                alert("Hubungkan wallet terlebih dahulu!");
-
-                return;
-
-            }
-
-            const val = parseFloat(input.value);
-
-            if (!val || val <= 0) {
-
-                alert("Masukkan jumlah token!");
-
-                return;
-
-            }
-
-            const log = document.getElementById("logConsole");
-
-            log.classList.remove("hidden");
-
-            log.innerHTML += `
-            <br>
-            <span class="text-yellow-400">
-            [PROCESS]: Swapping ${val} ${tokenA} → ${tokenB}
-            </span>
-            `;
-
-            setTimeout(() => {
-
-                log.innerHTML += `
-                <br>
-                <span class="text-emerald-400">
-                [SUCCESS]: Swap berhasil!
-                </span>
-                `;
-
-                input.value = "";
-                output.value = "";
-
-            }, 1500);
-
-        }
-
-    </script>
+function reverseSwap() {
+    let temp = tokenA;
+    tokenA = tokenB;
+    tokenB = temp;
+}
+
+</script>
 
 </body>
-
 </html>
