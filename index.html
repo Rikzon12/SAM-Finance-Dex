@@ -365,8 +365,7 @@
         </footer>
 
     </main>
-
-    <                <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.min.js"></script>
 
 <script>
 
@@ -449,39 +448,27 @@ function switchTab(tabName) {
 
     toggleMenu();
 
-    const swapSec = document.getElementById("swapSection");
-
-    const swapSub = document.getElementById("swapSubNav");
-
-    const liqSec = document.getElementById("liquiditySection");
-
-    const voteSec = document.getElementById("votesSection");
-
-    swapSec.classList.add("hidden");
-
-    swapSub.classList.add("hidden");
-
-    liqSec.classList.add("hidden");
-
-    voteSec.classList.add("hidden");
+    document.getElementById("swapSection").classList.add("hidden");
+    document.getElementById("swapSubNav").classList.add("hidden");
+    document.getElementById("liquiditySection").classList.add("hidden");
+    document.getElementById("votesSection").classList.add("hidden");
 
     if (tabName === "swap") {
 
-        swapSec.classList.remove("hidden");
-
-        swapSub.classList.remove("hidden");
+        document.getElementById("swapSection").classList.remove("hidden");
+        document.getElementById("swapSubNav").classList.remove("hidden");
 
     }
 
     if (tabName === "liquidity") {
 
-        liqSec.classList.remove("hidden");
+        document.getElementById("liquiditySection").classList.remove("hidden");
 
     }
 
     if (tabName === "votes") {
 
-        voteSec.classList.remove("hidden");
+        document.getElementById("votesSection").classList.remove("hidden");
 
     }
 }
@@ -498,16 +485,14 @@ async function connectWallet() {
 
     if (!window.ethereum) {
 
-        alert(
-            "Wallet tidak ditemukan! Gunakan MetaMask / Rabby / OKX Wallet."
-        );
+        alert("Wallet tidak ditemukan!");
 
         return;
     }
 
     try {
 
-        // CONNECT ACCOUNT
+        // REQUEST ACCOUNT
         const accounts = await window.ethereum.request({
 
             method: "eth_requestAccounts"
@@ -516,81 +501,70 @@ async function connectWallet() {
 
         const address = accounts[0];
 
-        // CHECK CURRENT NETWORK
-        const currentChain = await window.ethereum.request({
-
-            method: "eth_chainId"
-
-        });
-
         // SWITCH NETWORK
-        if (currentChain !== LITVM_PARAMS.chainId) {
+        try {
 
-            try {
+            await window.ethereum.request({
+
+                method: "wallet_switchEthereumChain",
+
+                params: [
+                    {
+                        chainId: "0x1159"
+                    }
+                ]
+
+            });
+
+        } catch (switchError) {
+
+            // NETWORK NOT ADDED
+            if (switchError.code === 4902) {
 
                 await window.ethereum.request({
 
-                    method: "wallet_switchEthereumChain",
+                    method: "wallet_addEthereumChain",
 
-                    params: [
-                        {
-                            chainId: LITVM_PARAMS.chainId
-                        }
-                    ]
+                    params: [LITVM_PARAMS]
 
                 });
 
-            } catch (switchError) {
-
-                // NETWORK NOT FOUND
-                if (switchError.code === 4902) {
-
-                    await window.ethereum.request({
-
-                        method: "wallet_addEthereumChain",
-
-                        params: [LITVM_PARAMS]
-
-                    });
-
-                } else {
-
-                    throw switchError;
-
-                }
             }
         }
 
-        // CONNECT SUCCESS
-        isConnected = true;
-
         // ======================================
-        // GET zkLTC BALANCE
+        // GET BALANCE
         // ======================================
 
-        const provider = new ethers.BrowserProvider(window.ethereum);
+        const provider =
+            new ethers.providers.Web3Provider(window.ethereum);
 
-        const balanceWei = await provider.getBalance(address);
+        const balanceWei =
+            await provider.getBalance(address);
 
-        const balance = ethers.formatEther(balanceWei);
+        const balance =
+            ethers.utils.formatEther(balanceWei);
 
-        const balanceText = document.querySelectorAll(
-            ".text-[11px].text-zinc-500.mt-2"
-        );
+        const balanceText =
+            document.querySelectorAll(
+                ".text-[11px].text-zinc-500.mt-2"
+            );
 
         if (balanceText[1]) {
 
             balanceText[1].innerText =
-                parseFloat(balance).toFixed(4) + " zkLTC Balance";
+                parseFloat(balance).toFixed(4)
+                + " zkLTC Balance";
         }
 
-        // SHORT ADDRESS
-        const shortAddress =
-            address.slice(0, 6) +
-            "..." +
-            address.slice(-4);
+        // SUCCESS
+        isConnected = true;
 
-        // BUTTON UI
+        const shortAddress =
+            address.slice(0, 6)
+            + "..."
+            + address.slice(-4);
+
         btn.innerText = shortAddress;
 
         btn.classList.remove(
@@ -603,7 +577,7 @@ async function connectWallet() {
             "text-black"
         );
 
-        // LOG CONSOLE
+        // LOG
         log.classList.remove("hidden");
 
         log.innerHTML += `
@@ -622,11 +596,9 @@ async function connectWallet() {
 
     } catch (err) {
 
-        console.error(err);
+        console.log(err);
 
-        alert(
-            "Koneksi wallet gagal atau ditolak user."
-        );
+        alert("Koneksi wallet gagal!");
 
     }
 }
@@ -639,9 +611,7 @@ function executeSwap() {
 
     if (!isConnected) {
 
-        alert(
-            "Hubungkan wallet terlebih dahulu!"
-        );
+        alert("Hubungkan wallet terlebih dahulu!");
 
         return;
     }
@@ -650,9 +620,7 @@ function executeSwap() {
 
     if (!val || val <= 0) {
 
-        alert(
-            "Masukkan nominal swap!"
-        );
+        alert("Masukkan nominal swap!");
 
         return;
     }
@@ -678,55 +646,26 @@ function executeSwap() {
         `;
 
         input.value = "";
-
         output.value = "";
 
     }, 1500);
 }
 
 // ======================================
-// PREVENT AUTO CONNECT UI
-// ======================================
-
-window.addEventListener("load", async () => {
-
-    if (window.ethereum) {
-
-        const accounts = await window.ethereum.request({
-            method: "eth_accounts"
-        });
-
-        if (accounts.length === 0) {
-
-            const btn = document.getElementById("connectBtn");
-
-            btn.innerText = "Connect";
-
-            isConnected = false;
-        }
-    }
-});
-
-// ======================================
-// ACCOUNT & CHAIN DETECT
+// ACCOUNT CHANGE
 // ======================================
 
 if (window.ethereum) {
 
-    // ACCOUNT CHANGE
     window.ethereum.on(
         "accountsChanged",
-        function(accounts) {
+        function() {
 
-            if (accounts.length === 0) {
+            location.reload();
 
-                location.reload();
-
-            }
         }
     );
 
-    // NETWORK CHANGE
     window.ethereum.on(
         "chainChanged",
         function() {
@@ -737,4 +676,4 @@ if (window.ethereum) {
     );
 }
 
-                </script>
+</script>
