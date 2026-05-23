@@ -2,221 +2,144 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAM Finance - SAMFI DEX</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<title>SAM Finance - SAMFI DEX</title>
 
-    <style>
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background: #000;
-        }
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
-        ::-webkit-scrollbar-thumb {
-            background: #eab308;
-            border-radius: 10px;
-        }
-    </style>
+<style>
+body {
+    font-family: 'Roboto Mono', monospace;
+    background: #000;
+}
+</style>
 </head>
 
-<body class="min-h-screen text-[#e5e7eb] overflow-x-hidden pb-10">
+<body class="text-white">
 
-<!-- HEADER -->
-<header class="w-full bg-[#050505] border-b border-[#151515] px-4 py-3 flex justify-between items-center sticky top-0 z-50">
-
-    <div class="flex items-center gap-3">
-
-        <div class="flex items-center gap-2">
-            <div class="w-6 h-6 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin"></div>
-
-            <span class="font-bold tracking-widest text-white">
-                SAM <span class="text-yellow-400">FINANCE</span>
-            </span>
-        </div>
-
-    </div>
-
-    <button id="connectBtn"
-        class="bg-[#111] border border-yellow-400/30 text-yellow-400 px-4 py-2 rounded-lg text-xs font-bold"
-        onclick="connectWallet()">
+<header class="p-4 border-b border-zinc-800 flex justify-between">
+    <div class="font-bold text-yellow-400">SAM FINANCE</div>
+    <button id="connectBtn" onclick="connectWallet()"
+        class="text-yellow-400 border border-yellow-500 px-3 py-1 rounded">
         CONNECT
     </button>
-
 </header>
 
-<!-- MAIN -->
-<main class="w-full max-w-lg mx-auto p-4 mt-5">
+<main class="max-w-md mx-auto p-4">
 
-    <!-- SWAP -->
-    <section class="space-y-4 mt-4">
+<!-- INPUT -->
+<div class="bg-zinc-900 p-4 rounded-xl mt-5">
 
-        <!-- INPUT -->
-        <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl">
+    <p class="text-xs text-gray-400">From (SAMFI)</p>
 
-            <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
-                <span>From</span>
-            </div>
+    <input id="amount" type="number"
+        class="w-full mt-2 p-2 bg-black border border-zinc-700 rounded text-right text-xl"
+        placeholder="0"/>
 
-            <div class="flex justify-between items-center">
+    <p id="bal" class="text-xs text-gray-500 mt-2">0 SAMFI Balance</p>
 
-                <div class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
-                    <div class="w-4 h-4 rounded-full bg-yellow-400"></div>
-                    <span class="font-bold text-xs">SAMFI</span>
-                </div>
+</div>
 
-                <input id="inputAmount" type="number" placeholder="0"
-                    class="bg-transparent outline-none text-right text-2xl w-1/2">
+<!-- BUTTON -->
+<button onclick="swap()"
+    class="w-full mt-4 bg-yellow-500 text-black font-bold py-3 rounded-xl">
 
-            </div>
+    SWAP REAL
 
-            <div id="samfiBalance" class="text-[11px] text-zinc-500 mt-2">
-                0 SAMFI Balance
-            </div>
+</button>
 
-        </div>
+<!-- LOG -->
+<div id="log" class="mt-4 text-xs text-gray-400 bg-zinc-900 p-3 rounded-xl h-32 overflow-y-auto">
 
-        <!-- SWITCH -->
-        <div class="flex justify-center">
-            <button onclick="reverseSwap()"
-                class="bg-black border border-zinc-800 text-yellow-400 px-3 py-2 rounded-lg">
-                ⇅
-            </button>
-        </div>
+[READY] SAM Finance DEX
 
-        <!-- OUTPUT -->
-        <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl">
-
-            <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
-                <span>To</span>
-            </div>
-
-            <div class="flex justify-between items-center">
-
-                <div class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
-                    <div class="w-4 h-4 rounded-full bg-sky-500"></div>
-                    <span class="font-bold text-xs">zkLTC</span>
-                </div>
-
-                <input id="outputAmount" disabled
-                    class="bg-transparent outline-none text-right text-2xl w-1/2 text-zinc-500">
-
-            </div>
-
-        </div>
-
-        <!-- BUTTON -->
-        <button onclick="executeSwap()"
-            class="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black text-xs">
-
-            SWAP (SIMULATION)
-
-        </button>
-
-    </section>
+</div>
 
 </main>
 
-<!-- Ethers -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-
 <script>
 
-let isConnected = false;
+const SAMFI = "0xAC9E151b4048b179Be0CbB23C0c6FC29419061a7";
+const LP    = "0xbd5588aF3470B6bEbD969B82497c2a0F54168DD5";
 
-let tokenA = "SAMFI";
-let tokenB = "zkLTC";
+let signer;
 
-// CONTRACT
-const SAMFI_CONTRACT = "0xAC9E151b4048b179Be0CbB23C0c6FC29419061a7";
+async function connectWallet(){
 
-const ERC20_ABI = [
-    "function balanceOf(address owner) view returns (uint256)",
-    "function decimals() view returns (uint8)"
-];
-
-// NETWORK
-const LITVM_PARAMS = {
-    chainId: "0x1159",
-    chainName: "LitVM LiteForge",
-    rpcUrls: ["https://liteforge.rpc.caldera.xyz/http"],
-    nativeCurrency: {
-        name: "zkLTC",
-        symbol: "zkLTC",
-        decimals: 18
-    }
-};
-
-// UI
-const input = document.getElementById("inputAmount");
-const output = document.getElementById("outputAmount");
-
-input.addEventListener("input", (e) => {
-    output.value = e.target.value;
-});
-
-// GET BALANCE
-async function getSAMFIBalance(wallet, provider) {
-    const contract = new ethers.Contract(SAMFI_CONTRACT, ERC20_ABI, provider);
-    const bal = await contract.balanceOf(wallet);
-    const dec = await contract.decimals();
-    return ethers.formatUnits(bal, dec);
-}
-
-// CONNECT
-async function connectWallet() {
-
-    const btn = document.getElementById("connectBtn");
-
-    if (!window.ethereum) {
-        alert("Install MetaMask");
+    if(!window.ethereum){
+        alert("Install wallet");
         return;
     }
-
-    const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts"
-    });
-
-    const wallet = accounts[0];
 
     const provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner();
 
-    const balance = await getSAMFIBalance(wallet, provider);
+    const addr = await signer.getAddress();
 
-    const short = wallet.slice(0,6) + "..." + wallet.slice(-4);
+    document.getElementById("connectBtn").innerText =
+        addr.slice(0,6)+"..."+addr.slice(-4);
 
-    btn.innerText = short;
-
-    document.getElementById("samfiBalance").innerText =
-        balance + " SAMFI Balance";
-
-    isConnected = true;
 }
 
-// SWAP (still simulation)
-function executeSwap() {
+async function swap(){
 
-    if (!isConnected) {
-        alert("Connect wallet first");
+    if(!signer){
+        alert("Connect wallet dulu");
         return;
     }
 
-    alert("Swap simulation success (DEX router not connected yet)");
-}
+    const amount = document.getElementById("amount").value;
+    const log = document.getElementById("log");
 
-function reverseSwap() {
-    let temp = tokenA;
-    tokenA = tokenB;
-    tokenB = temp;
+    if(!amount || amount <= 0){
+        alert("input amount");
+        return;
+    }
+
+    try {
+
+        log.innerHTML += "<br>[1] Approving SAMFI...";
+
+        const erc20 = new ethers.Contract(SAMFI, [
+            "function approve(address spender,uint amount) returns(bool)"
+        ], signer);
+
+        const tx1 = await erc20.approve(LP, ethers.parseEther(amount));
+        await tx1.wait();
+
+        log.innerHTML += "<br>[2] Swap executing...";
+
+        const lp = new ethers.Contract(LP, [
+            "function swap(uint amount0Out,uint amount1Out,address to)"
+        ], signer);
+
+        const user = await signer.getAddress();
+
+        const tx2 = await lp.swap(
+            0,
+            ethers.parseEther(amount),
+            user
+        );
+
+        await tx2.wait();
+
+        log.innerHTML += "<br>✅ SWAP SUCCESS (ON-CHAIN)";
+
+    } catch(e){
+
+        console.log(e);
+        log.innerHTML += "<br>❌ FAILED - LP mungkin butuh router logic";
+
+    }
 }
 
 </script>
 
 </body>
+
 </html>
