@@ -27,7 +27,6 @@ CONNECT
 
 <main class="max-w-md mx-auto p-4">
 
-<!-- BALANCE -->
 <div class="text-xs text-gray-400 mb-2">
 zkLTC: <span id="nativeBal">0</span>
 </div>
@@ -58,7 +57,6 @@ placeholder="0"/>
 
 </div>
 
-<!-- SWAP ICON -->
 <div onclick="swapUI()" class="text-center text-yellow-400 my-3 cursor-pointer">
 ⇅
 </div>
@@ -101,22 +99,24 @@ let provider;
 
 // ================= ABI =================
 const erc20Abi = [
-"function approve(address,uint) returns(bool)",
-"function balanceOf(address) view returns(uint)"
+"function approve(address,uint256) returns(bool)",
+"function balanceOf(address) view returns(uint256)",
+"function decimals() view returns(uint8)"
 ];
 
 const routerAbi = [
-"function swapExactTokensForTokens(uint,uint,address[],address,uint)"
+"function swapExactTokensForTokens(uint256,uint256,address[],address,uint256)",
+"function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint256,uint256,address[],address,uint256)"
 ];
 
-// ================= GRAPH ROUTING =================
+// ================= GRAPH =================
 const GRAPH = {
 "zkLTC": ["WZK"],
 "WZK": ["zkLTC", "SAMFI"],
 "SAMFI": ["WZK"]
 };
 
-// ================= ROUTE FINDER =================
+// ================= FIND PATH =================
 function findPath(from, to, visited = new Set()) {
 if (from === to) return [from];
 
@@ -132,7 +132,7 @@ if (p) return [from, ...p];
 return null;
 }
 
-// ================= AMM =================
+// ================= AMM (SIMPLIFIED) =================
 let RESERVES = {
 "WZK-SAMFI": { x: 1000000, y: 1000000000 }
 };
@@ -163,8 +163,6 @@ amt = getAmountOut(amt, pool.x, pool.y);
 amt = getAmountOut(amt, pool.y, pool.x);
 }
 
-} else {
-amt = amt * 1;
 }
 
 }
@@ -172,13 +170,12 @@ amt = amt * 1;
 return amt;
 }
 
-// ================= LOG SYSTEM =================
+// ================= LOG =================
 function setLog(msg,type="info"){
 
 let el = document.getElementById("log");
 
-let color = "white";
-
+let color="white";
 if(type==="success") color="lightgreen";
 if(type==="error") color="red";
 if(type==="pending") color="orange";
@@ -200,11 +197,13 @@ document.getElementById("connectBtn").innerText =
 addr.slice(0,6)+"..."+addr.slice(-4);
 
 loadAll();
-startAuto();
+setInterval(loadAll,5000);
 }
 
 // ================= LOAD BALANCE =================
 async function loadAll(){
+
+if(!signer) return;
 
 const user = await signer.getAddress();
 
@@ -216,28 +215,23 @@ const b2 = await wzk.balanceOf(user);
 const b3 = await provider.getBalance(user);
 
 document.getElementById("balSAMFI").innerText =
-parseFloat(ethers.formatEther(b1)).toFixed(4);
+Number(ethers.formatEther(b1)).toFixed(4);
 
 document.getElementById("balWZK").innerText =
-parseFloat(ethers.formatEther(b2)).toFixed(4);
+Number(ethers.formatEther(b2)).toFixed(4);
 
 document.getElementById("nativeBal").innerText =
-parseFloat(ethers.formatEther(b3)).toFixed(4);
+Number(ethers.formatEther(b3)).toFixed(4);
 }
 
-// ================= AUTO UPDATE =================
-function startAuto(){
-setInterval(()=>{ loadAll(); }, 5000);
-}
-
-// ================= SWAP UI =================
+// ================= UI SWAP =================
 function swapUI(){
 
-let a = document.getElementById("fromToken").value;
-let b = document.getElementById("toToken").value;
+let a=document.getElementById("fromToken").value;
+let b=document.getElementById("toToken").value;
 
-document.getElementById("fromToken").value = b;
-document.getElementById("toToken").value = a;
+document.getElementById("fromToken").value=b;
+document.getElementById("toToken").value=a;
 
 document.getElementById("out").value =
 document.getElementById("amount").value || "";
@@ -246,85 +240,97 @@ document.getElementById("amount").value || "";
 // ================= LIVE QUOTE =================
 document.getElementById("amount").addEventListener("input",(e)=>{
 
-let amount = e.target.value;
-let from = document.getElementById("fromToken").value;
-let to = document.getElementById("toToken").value;
+let amount=e.target.value;
+let from=document.getElementById("fromToken").value;
+let to=document.getElementById("toToken").value;
 
 if(!amount) return;
 
-let path = findPath(from,to);
+let path=findPath(from,to);
 
 if(!path){
-document.getElementById("out").value = "No route";
+document.getElementById("out").value="No route";
 return;
 }
 
-let out = calc(amount, path);
+let out=calc(amount,path);
 
-document.getElementById("out").value =
-parseFloat(out).toFixed(6);
+document.getElementById("out").value=Number(out).toFixed(6);
 
 });
 
-// ================= SWAP CORE =================
+// ================= SWAP CORE FIXED =================
 async function swap(){
 
 if(!signer) return alert("connect wallet");
 
-let amount = document.getElementById("amount").value;
-let from = document.getElementById("fromToken").value;
-let to = document.getElementById("toToken").value;
+let amount=document.getElementById("amount").value;
+let from=document.getElementById("fromToken").value;
+let to=document.getElementById("toToken").value;
 
-let user = await signer.getAddress();
+let user=await signer.getAddress();
 
-setLog("⏳ Processing...", "pending");
+setLog("Processing...","pending");
 
-try {
+try{
 
-let path = findPath(from,to);
+let path=findPath(from,to);
 
 if(!path){
-setLog("❌ No route found","error");
+setLog("No route found","error");
 return;
 }
 
 // wrap zkLTC
 if(from==="zkLTC"){
 await signer.sendTransaction({
-to: WZK,
-value: ethers.parseEther(amount)
+to:WZK,
+value:BigInt(Math.floor(amount*1e18))
 });
 path[0]="WZK";
 }
 
 // approve
-const token = new ethers.Contract(path[0], erc20Abi, signer);
-await token.approve(ROUTER, ethers.parseEther(amount));
+const token=new ethers.Contract(path[0],erc20Abi,signer);
+await token.approve(ROUTER,BigInt(Math.floor(amount*1e18)));
 
-// swap
-const router = new ethers.Contract(ROUTER, routerAbi, signer);
+// router
+const router=new ethers.Contract(ROUTER,routerAbi,signer);
 
-const tx = await router.swapExactTokensForTokens(
-ethers.parseEther(amount),
+const deadline=Math.floor(Date.now()/1000)+600;
+
+let tx;
+
+try{
+tx=await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+BigInt(Math.floor(amount*1e18)),
 0,
 path,
 user,
-Math.floor(Date.now()/1000)+600
+deadline
 );
+}catch(e){
+tx=await router.swapExactTokensForTokens(
+BigInt(Math.floor(amount*1e18)),
+0,
+path,
+user,
+deadline
+);
+}
 
-setLog("⏳ Waiting confirmation...", "pending");
+setLog("Waiting confirmation...","pending");
 
 await tx.wait();
 
-setLog("✅ SWAP SUCCESS", "success");
+setLog("SWAP SUCCESS","success");
 
 loadAll();
 
-} catch(e){
+}catch(e){
 
 console.log(e);
-
-setLog("❌ SWAP FAILED", "error");
+setLog("SWAP FAILED (check liquidity / router)","error");
 
 }
 
