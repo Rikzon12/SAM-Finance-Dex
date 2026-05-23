@@ -10,11 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 
 <style>
-body {
-  background:#000;
-  color:white;
-  font-family: monospace;
-}
+body { background:#000; color:white; font-family: monospace; }
 </style>
 </head>
 
@@ -31,9 +27,9 @@ CONNECT
 
 <main class="max-w-md mx-auto p-4">
 
-<!-- NATIVE BALANCE -->
+<!-- BALANCE -->
 <div class="text-xs text-gray-400 mb-3">
-zkLTC (Native): <span id="nativeBal">0</span>
+zkLTC: <span id="nativeBal">0</span>
 </div>
 
 <!-- FROM -->
@@ -43,8 +39,8 @@ zkLTC (Native): <span id="nativeBal">0</span>
 From
 <select id="fromToken" class="bg-black border p-1 text-xs">
 <option value="zkLTC">zkLTC</option>
-<option value="SAMFI">SAMFI</option>
 <option value="WZK">WzkLTC</option>
+<option value="SAMFI">SAMFI</option>
 </select>
 </div>
 
@@ -54,7 +50,7 @@ placeholder="0"/>
 
 </div>
 
-<!-- SWAP -->
+<!-- SWAP ICON -->
 <div onclick="swapUI()" class="text-center text-yellow-400 my-3 cursor-pointer">
 ⇅
 </div>
@@ -99,8 +95,8 @@ const erc20Abi = [
 "function balanceOf(address) view returns(uint)"
 ];
 
-const pairAbi = [
-"function getAmountOut(uint,bool) view returns(uint)"
+const routerAbi = [
+"function swapExactTokensForTokens(uint,uint,address[],address,uint)"
 ];
 
 // ================= CONNECT =================
@@ -131,7 +127,7 @@ document.getElementById("nativeBal").innerText =
 parseFloat(ethers.formatEther(bal)).toFixed(4);
 }
 
-// ================= SWAP UI SWITCH =================
+// ================= UI SWAP =================
 function swapUI(){
 
 let a = document.getElementById("fromToken").value;
@@ -144,42 +140,35 @@ document.getElementById("out").value =
 document.getElementById("amount").value || "";
 }
 
-// ================= SAFE RESERVE (ANTI ERROR) =================
-// sementara fallback biar TIDAK BLANK
-const FALLBACK_RATE = {
-"zkLTC-SAMFI": 8000,
-"SAMFI-zkLTC": 0.0001,
-"WZK-SAMFI": 10000,
-"SAMFI-WZK": 0.0001,
-"zkLTC-WZK": 1,
-"WZK-zkLTC": 1
-};
+// ================= AUTO QUOTE (SAFE SIMPLIFIED) =================
+// nanti bisa diganti real reserve on-chain
+function getRate(from,to){
 
-// ================= PRICE QUOTE SAFE =================
-function getQuote(amount, from, to){
+if(from==="zkLTC" && to==="SAMFI") return 8000;
+if(from==="SAMFI" && to==="zkLTC") return 0.00012;
 
-if(!amount || amount <= 0) return "0";
+if(from==="WZK" && to==="SAMFI") return 10000;
+if(from==="SAMFI" && to==="WZK") return 0.0001;
 
-const key = from + "-" + to;
+if(from==="zkLTC" && to==="WZK") return 1;
+if(from==="WZK" && to==="zkLTC") return 1;
 
-const rate = FALLBACK_RATE[key];
-
-if(!rate) return "0";
-
-return (amount * rate).toFixed(6);
+return 0;
 }
 
-// ================= LIVE INPUT =================
+// ================= LIVE PRICE =================
 document.getElementById("amount").addEventListener("input", (e)=>{
 
 const amount = e.target.value;
-
 const from = document.getElementById("fromToken").value;
 const to = document.getElementById("toToken").value;
 
-const out = getQuote(amount, from, to);
+if(!amount) return;
 
-document.getElementById("out").value = out;
+const rate = getRate(from,to);
+
+document.getElementById("out").value =
+(rate * amount).toFixed(6);
 
 });
 
@@ -197,9 +186,12 @@ const user = await signer.getAddress();
 let log = document.getElementById("log");
 log.innerHTML = "processing...";
 
-// ================= HANDLE zkLTC =================
+// ================= WRAP LOGIC =================
+let tokenIn;
+
 if(from === "zkLTC"){
 
+// wrap native → WzkLTC
 const tx = await signer.sendTransaction({
 to: WZK,
 value: ethers.parseEther(amount)
@@ -207,11 +199,39 @@ value: ethers.parseEther(amount)
 
 await tx.wait();
 
+tokenIn = WZK;
+
+} else if(from === "SAMFI") {
+tokenIn = SAMFI;
+} else {
+tokenIn = WZK;
 }
 
-// ================= SIMPLIFIED SWAP LOG =================
-// (AMM router kamu tetap dipakai kalau sudah ada)
-log.innerHTML = "✅ SWAP DONE (UI SAFE MODE)";
+// ================= OUTPUT =================
+const tokenOut =
+to === "SAMFI" ? SAMFI :
+to === "WZK" ? WZK : WZK;
+
+// ================= APPROVE =================
+if(tokenIn !== "NATIVE"){
+const token = new ethers.Contract(tokenIn, erc20Abi, signer);
+await token.approve(ROUTER, ethers.parseEther(amount));
+}
+
+// ================= ROUTER SWAP =================
+const router = new ethers.Contract(ROUTER, routerAbi, signer);
+
+const tx = await router.swapExactTokensForTokens(
+ethers.parseEther(amount),
+0,
+[tokenIn, tokenOut],
+user,
+Math.floor(Date.now()/1000)+600
+);
+
+await tx.wait();
+
+log.innerHTML = "✅ SWAP SUCCESS";
 
 loadNative();
 
