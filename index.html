@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>SAM Finance - LitVM Hub</title>
+    <title>SAM Finance - LitVM DEX</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -79,7 +79,9 @@
     <div id="sideMenu"
         class="fixed inset-0 bg-black/95 hidden z-40 pt-24 px-8 flex flex-col gap-6 text-center uppercase tracking-widest text-sm">
 
-        <a href="#" onclick="switchTab('swap')" class="text-yellow-400">Swap</a>
+        <a href="#" onclick="switchTab('swap')" class="text-yellow-400">
+            Swap
+        </a>
 
         <a href="#" onclick="switchTab('liquidity')" class="text-zinc-400">
             Liquidity
@@ -91,7 +93,9 @@
 
         <button onclick="toggleMenu()"
             class="mt-6 bg-zinc-900 border border-zinc-800 rounded-lg py-2 text-xs">
+
             CLOSE MENU
+
         </button>
 
     </div>
@@ -132,7 +136,7 @@
 
                 <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
 
-                    <span>Swap</span>
+                    <span>From</span>
 
                     <div class="flex gap-2 text-yellow-400 font-bold">
 
@@ -150,9 +154,9 @@
                     <div
                         class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
 
-                        <div class="w-4 h-4 rounded-full bg-yellow-400"></div>
+                        <div id="tokenAColor" class="w-4 h-4 rounded-full bg-yellow-400"></div>
 
-                        <span class="font-bold text-xs">
+                        <span id="tokenAName" class="font-bold text-xs">
                             SAM
                         </span>
 
@@ -163,7 +167,7 @@
 
                 </div>
 
-                <div id="samBalance" class="text-[11px] text-zinc-500 mt-2">
+                <div id="tokenABalance" class="text-[11px] text-zinc-500 mt-2">
                     0 SAM Balance
                 </div>
 
@@ -172,12 +176,12 @@
             <!-- SWITCH -->
             <div class="flex justify-center -my-5 relative z-10">
 
-                <div
-                    class="bg-black border-2 border-zinc-800 text-yellow-400 p-2 rounded-lg cursor-pointer">
+                <button onclick="reverseSwap()"
+                    class="bg-black border-2 border-zinc-800 text-yellow-400 p-2 rounded-lg cursor-pointer hover:scale-110 transition-all">
 
                     ⇅
 
-                </div>
+                </button>
 
             </div>
 
@@ -186,9 +190,9 @@
 
                 <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
 
-                    <span>For</span>
+                    <span>To</span>
 
-                    <span>Token Amount</span>
+                    <span>Estimated</span>
 
                 </div>
 
@@ -197,9 +201,9 @@
                     <div
                         class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
 
-                        <div class="w-4 h-4 rounded-full bg-sky-500"></div>
+                        <div id="tokenBColor" class="w-4 h-4 rounded-full bg-sky-500"></div>
 
-                        <span class="font-bold text-xs">
+                        <span id="tokenBName" class="font-bold text-xs">
                             zkLTC
                         </span>
 
@@ -210,7 +214,7 @@
 
                 </div>
 
-                <div id="zkltcBalance" class="text-[11px] text-zinc-500 mt-2">
+                <div id="tokenBBalance" class="text-[11px] text-zinc-500 mt-2">
                     0 zkLTC Balance
                 </div>
 
@@ -221,7 +225,7 @@
                 class="border-l-2 border-yellow-400 bg-zinc-900/20 p-3 rounded-r-lg text-[11px] text-zinc-400 space-y-2">
 
                 <div>
-                    [1] Masukkan jumlah token swap.
+                    [1] Connect wallet untuk mulai swap.
                 </div>
 
                 <div>
@@ -233,7 +237,7 @@
             <!-- FEES -->
             <div class="flex justify-between text-[11px] text-zinc-500">
 
-                <span>FEES ESTIMATE</span>
+                <span>NETWORK FEE</span>
 
                 <span class="text-yellow-400">
                     0.001 zkLTC
@@ -243,7 +247,7 @@
 
             <!-- BUTTON -->
             <button onclick="executeSwap()"
-                class="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black text-xs tracking-widest">
+                class="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black text-xs tracking-widest hover:opacity-90 transition-all">
 
                 APPROVE & SWAP
 
@@ -295,6 +299,9 @@
         let isConnected = false;
         let menuOpen = false;
 
+        let tokenA = "SAM";
+        let tokenB = "zkLTC";
+
         // NETWORK
         const LITVM_PARAMS = {
 
@@ -318,7 +325,7 @@
 
         };
 
-        // INPUT SYNC
+        // INPUT
         const input = document.getElementById("inputAmount");
         const output = document.getElementById("outputAmount");
 
@@ -381,6 +388,56 @@
 
         }
 
+        // REVERSE SWAP
+        function reverseSwap() {
+
+            // TOKEN
+            const temp = tokenA;
+
+            tokenA = tokenB;
+
+            tokenB = temp;
+
+            // UI TOKEN
+            document.getElementById("tokenAName").innerText = tokenA;
+
+            document.getElementById("tokenBName").innerText = tokenB;
+
+            // COLOR
+            if (tokenA === "SAM") {
+
+                document.getElementById("tokenAColor").className =
+                    "w-4 h-4 rounded-full bg-yellow-400";
+
+                document.getElementById("tokenBColor").className =
+                    "w-4 h-4 rounded-full bg-sky-500";
+
+            } else {
+
+                document.getElementById("tokenAColor").className =
+                    "w-4 h-4 rounded-full bg-sky-500";
+
+                document.getElementById("tokenBColor").className =
+                    "w-4 h-4 rounded-full bg-yellow-400";
+
+            }
+
+            // BALANCE
+            document.getElementById("tokenABalance").innerText =
+                "0 " + tokenA + " Balance";
+
+            document.getElementById("tokenBBalance").innerText =
+                "0 " + tokenB + " Balance";
+
+            // VALUE
+            const tempValue = input.value;
+
+            input.value = output.value;
+
+            output.value = tempValue;
+
+        }
+
         // CONNECT WALLET
         async function connectWallet() {
 
@@ -392,7 +449,7 @@
 
                 if (!window.ethereum) {
 
-                    alert("Gunakan MetaMask / OKX / Rabby Wallet");
+                    alert("Gunakan MetaMask / OKX / Rabby");
 
                     return;
 
@@ -405,12 +462,12 @@
 
                 const wallet = accounts[0];
 
-                // CHAIN CHECK
+                // CHAIN
                 const currentChain = await window.ethereum.request({
                     method: "eth_chainId"
                 });
 
-                // SWITCH NETWORK
+                // SWITCH
                 if (currentChain !== "0x1159") {
 
                     try {
@@ -440,8 +497,6 @@
 
                         } else {
 
-                            console.log(switchError);
-
                             alert("Gagal switch network");
 
                             return;
@@ -470,8 +525,11 @@
                 btn.innerText = shortWallet;
 
                 // BALANCE UI
-                document.getElementById("zkltcBalance").innerText =
-                    parseFloat(balance).toFixed(4) + " zkLTC Balance";
+                document.getElementById("tokenABalance").innerText =
+                    parseFloat(balance).toFixed(4) + " " + tokenA + " Balance";
+
+                document.getElementById("tokenBBalance").innerText =
+                    parseFloat(balance).toFixed(4) + " " + tokenB + " Balance";
 
                 // STATUS
                 isConnected = true;
@@ -535,7 +593,7 @@
             log.innerHTML += `
             <br>
             <span class="text-yellow-400">
-            [PROCESS]: Swap ${val} SAM...
+            [PROCESS]: Swapping ${val} ${tokenA} → ${tokenB}
             </span>
             `;
 
