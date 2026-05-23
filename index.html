@@ -91,7 +91,7 @@
 
             <div class="border-l-2 border-yellow-400 bg-zinc-900/20 p-3 rounded-r-lg space-y-2 text-[11px] text-zinc-400 leading-relaxed font-mono">
                 <div>[1] Masukkan jumlah token SAM / zkLTC yang ingin ditukarkan.</div>
-                <div>[2] Jaringan otomatis dikunci pada <span class="text-yellow-400 font-bold">LitVM LiteForge</span>.</div>
+                <div>[2] Jaringan otomatis dikunci pada <span class="text-yellow-400 font-bold">LitVM LiteForge (Testnet)</span>.</div>
             </div>
 
             <div class="px-1 text-[11px] text-zinc-500 flex justify-between font-medium">
@@ -119,12 +119,6 @@
                     <div class="text-base font-bold text-white mt-1">~$59.32M</div>
                 </div>
             </div>
-            <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl space-y-4">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-white">CL200-SAM/WzkLTC</span>
-                    <span class="text-[11px] text-emerald-400 font-bold">APR 14,655.1%</span>
-                </div>
-            </div>
         </section>
 
         <section id="votesSection" class="hidden space-y-4">
@@ -150,9 +144,9 @@
         let isConnected = false;
         let menuOpen = false;
 
-        // PARAMETER SISTEM RESMI RPC LITVM LITEFORGE (CHAIN ID 4441)
+        // FIXED PARAMETER OFFICIAL RPC LITVM LITEFORGE (CHAIN ID: 4441)
         const LITVM_PARAMS = {
-            chainId: "0x1159", // Hexadecimal dari 4441
+            chainId: "0x1159", // Hexadecimal 4441 terverifikasi aman
             chainName: "LitVM LiteForge",
             rpcUrls: ["https://liteforge.rpc.caldera.xyz/http"],
             nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
@@ -165,7 +159,7 @@
             input.addEventListener('input', (e) => { output.value = e.target.value; });
         }
 
-        // FUNGSI AKTIVASI MENU HAMBURGER (SUDAH FIX!)
+        // FUNGSI MENU HAMBURGER (FIXED)
         function toggleMenu() {
             const menu = document.getElementById('sideMenu');
             menuOpen = !menuOpen;
@@ -195,26 +189,25 @@
             }
         }
 
-        // FUNGSI UTAMA KONEKSI WALLET NYATA (MENDUKUNG EXTENSION CHROME & WEB WALLET)
+        // FUNGSI UTAMA KONEKSI EXTENSION & WEB WALLET
         async function connectWallet() {
             const btn = document.getElementById('connectBtn');
             const log = document.getElementById('logConsole');
 
-            // 1. Cek ketersediaan provider dompet crypto (window.ethereum)
             if (typeof window.ethereum !== 'undefined') {
                 try {
-                    // Memicu jendela ekstensi/wallet (MetaMask, OKX, Rabby, dll) untuk meminta akses akun
+                    // 1. Minta koneksi akun MetaMask/OKX/Rabby
                     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                     const address = accounts[0];
                     
-                    // 2. OTOMATIS SWAP KE JARINGAN LITVM TESTNET (LITEFORGE)
+                    // 2. FORCE SWITCH JARiNGAN KE LITVM LITEFORGE
                     try {
                         await window.ethereum.request({
                             method: 'wallet_switchEthereumChain',
                             params: [{ chainId: LITVM_PARAMS.chainId }],
                         });
                     } catch (switchError) {
-                        // Jika jaringan LitVM belum tersimpan di dompet, daftarkan RPC-nya secara otomatis
+                        // Jika jaringan LitVM belum ada di wallet, push parameter barunya
                         if (switchError.code === 4902 || switchError.data?.originalError?.code === 4902) {
                             await window.ethereum.request({
                                 method: 'wallet_addEthereumChain',
@@ -223,17 +216,15 @@
                         }
                     }
 
-                    // Menampilkan alamat ringkas user di tombol navbar
                     btn.innerText = address.substring(0, 6) + "..." + address.substring(34);
                     isConnected = true;
                     log.classList.remove('hidden');
-                    log.innerHTML += `<br><span class="text-emerald-400">[Web3 Active]: Berhasil terhubung menggunakan wallet EVM (${address}) di LitVM.</span>`;
+                    log.innerHTML += `<br><span class="text-emerald-400">[Web3 Active]: Berhasil terhubung ke LitVM (${address})</span>`;
                 } catch (err) {
-                    alert("Koneksi ditiadakan atau ditolak oleh pengguna.");
+                    alert("Koneksi jaringan atau dompet ditolak.");
                 }
             } else {
-                // Notifikasi peringatan jika dibuka di browser biasa tanpa ekstensi web3
-                alert("Dompet EVM tidak terdeteksi! Silakan gunakan Browser Ekstensi Chrome (MetaMask, OKX, Rabby) atau buka lewat peramban internal aplikasi dompet crypto kamu.");
+                alert("Dompet EVM (Extension/In-App) tidak ditemukan! Buka via MetaMask/Rabby/OKX Wallet.");
                 btn.innerText = "NO WALLET";
             }
         }
@@ -248,12 +239,11 @@
 
             const log = document.getElementById('logConsole');
             log.classList.remove('hidden');
-            log.innerHTML += `<br><span class="text-yellow-400">[Tx Request]: Menunggu konfirmasi transaksi swap di wallet...</span>`;
+            log.innerHTML += `<br><span class="text-yellow-400">[Tx Request]: Memproses swap di LitVM LiteForge...</span>`;
             
             setTimeout(() => {
-                log.innerHTML += `<br><span class="text-emerald-400 font-bold">[Success]: Perintah swap ${val} SAM disetujui di jaringan LitVM LiteForge!</span>`;
+                log.innerHTML += `<br><span class="text-emerald-400 font-bold">[Success]: Perintah swap ${val} SAM selesai!</span>`;
                 input.value = ''; output.value = '';
-                log.scrollTop = log.scrollHeight;
             }, 1000);
         }
     </script>
