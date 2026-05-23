@@ -1,685 +1,562 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>SAM FINANCE | LitVM DEX</title>
+    <title>SAM Finance - LitVM Hub</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
 
-<style>
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: #000;
+        }
 
-body{
-    font-family:'Roboto Mono',monospace;
-    background:#000;
-    overflow-x:hidden;
-}
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
 
-/* SCROLL */
-::-webkit-scrollbar{
-    width:4px;
-}
-::-webkit-scrollbar-thumb{
-    background:#eaff00;
-}
-
-/* ANIMATION */
-.glow{
-    box-shadow:0 0 20px rgba(234,255,0,.15);
-}
-
-.card-border{
-    border:1px solid rgba(234,255,0,.25);
-}
-
-.bg-panel{
-    background:linear-gradient(
-        180deg,
-        rgba(15,15,15,.98),
-        rgba(0,0,0,.98)
-    );
-}
-
-.logo-spin{
-    animation:spin 6s linear infinite;
-}
-
-@keyframes spin{
-    from{
-        transform:rotate(0deg);
-    }
-    to{
-        transform:rotate(360deg);
-    }
-}
-
-</style>
-
+        ::-webkit-scrollbar-thumb {
+            background: #eab308;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 
-<body class="text-white min-h-screen">
+<body class="min-h-screen text-[#e5e7eb] overflow-x-hidden pb-10">
 
-<!-- HEADER -->
-<header class="w-full border-b border-zinc-900 bg-black sticky top-0 z-50">
+    <!-- HEADER -->
+    <header
+        class="w-full bg-[#050505] border-b border-[#151515] px-4 py-3 flex justify-between items-center sticky top-0 z-50">
 
-<div class="flex justify-between items-center px-4 py-4">
+        <div class="flex items-center gap-3">
 
-<div class="flex items-center gap-4">
+            <button onclick="toggleMenu()" class="text-yellow-400">
 
-<button onclick="toggleMenu()" class="text-yellow-300">
-<svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-</svg>
-</button>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
-<div class="flex items-center gap-2">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"></path>
 
-<div class="w-8 h-8 rounded-full border-2 border-yellow-300 border-t-transparent logo-spin flex items-center justify-center">
-<div class="w-2 h-2 rounded-full bg-yellow-300"></div>
-</div>
+                </svg>
 
-<div class="text-xl font-bold tracking-[4px]">
-SAM <span class="text-yellow-300">FINANCE</span>
-</div>
+            </button>
 
-</div>
+            <div class="flex items-center gap-2">
 
-</div>
+                <div
+                    class="w-6 h-6 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin flex items-center justify-center">
 
-<button
-id="connectBtn"
-onclick="connectWallet()"
-class="bg-zinc-900 hover:bg-zinc-800 border border-yellow-300/30 px-5 py-2 rounded-xl text-yellow-300 font-bold tracking-widest text-sm glow">
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
 
-CONNECT
+                </div>
 
-</button>
+                <span class="font-bold tracking-widest text-white">
+                    SAM <span class="text-yellow-400">FINANCE</span>
+                </span>
 
-</div>
+            </div>
 
-</header>
+        </div>
 
-<!-- SIDE MENU -->
-<div
-id="sideMenu"
-class="fixed inset-0 bg-black/95 hidden z-40 pt-24 px-8">
+        <button id="connectBtn"
+            class="bg-[#111] border border-yellow-400/30 text-yellow-400 px-4 py-2 rounded-lg text-xs font-bold tracking-widest"
+            onclick="connectWallet()">
 
-<div class="flex flex-col gap-7 text-center text-2xl tracking-widest">
+            CONNECT
 
-<button onclick="switchTab('swap')" class="text-yellow-300">
-SWAP
-</button>
+        </button>
 
-<button onclick="switchTab('liquidity')" class="text-zinc-400">
-LIQUIDITY
-</button>
+    </header>
 
-<button onclick="switchTab('locks')" class="text-zinc-400">
-LOCKS
-</button>
+    <!-- MENU -->
+    <div id="sideMenu"
+        class="fixed inset-0 bg-black/95 hidden z-40 pt-24 px-8 flex flex-col gap-6 text-center uppercase tracking-widest text-sm">
 
-<button onclick="switchTab('votes')" class="text-zinc-400">
-VOTES
-</button>
+        <a href="#" onclick="switchTab('swap')" class="text-yellow-400">Swap</a>
 
-<button onclick="switchTab('bridge')" class="text-zinc-400">
-BRIDGE
-</button>
+        <a href="#" onclick="switchTab('liquidity')" class="text-zinc-400">
+            Liquidity
+        </a>
 
-<button
-onclick="toggleMenu()"
-class="mt-10 bg-zinc-900 py-3 rounded-xl border border-zinc-800 text-sm">
+        <a href="#" onclick="switchTab('votes')" class="text-zinc-400">
+            Votes
+        </a>
 
-CLOSE MENU
+        <button onclick="toggleMenu()"
+            class="mt-6 bg-zinc-900 border border-zinc-800 rounded-lg py-2 text-xs">
+            CLOSE MENU
+        </button>
 
-</button>
+    </div>
 
-</div>
+    <!-- MAIN -->
+    <main class="w-full max-w-lg mx-auto p-4 mt-5">
 
-</div>
+        <!-- SUB NAV -->
+        <div id="swapSubNav"
+            class="flex gap-3 border-b border-zinc-900 pb-3 text-xs font-bold tracking-wider text-zinc-400">
 
-<!-- MAIN -->
-<main class="max-w-xl mx-auto px-4 py-6">
+            <button class="text-white border-b-2 border-yellow-400 pb-2">
+                SWAP
+            </button>
 
-<!-- HERO -->
-<section class="mb-8">
+            <button>
+                TWAP
+            </button>
 
-<div class="rounded-3xl overflow-hidden border border-yellow-300/20 bg-panel p-8 relative">
+            <button>
+                LIMIT
+            </button>
 
-<div class="absolute inset-0 opacity-10">
-<div class="w-[500px] h-[500px] rounded-full border border-yellow-300 absolute -bottom-72 -left-40"></div>
-</div>
+            <div
+                class="ml-auto bg-zinc-900 px-2 py-1 rounded border border-zinc-800 text-yellow-400 text-[10px]">
 
-<div class="relative z-10">
+                1% SLIPPAGE
 
-<div class="text-5xl font-black tracking-[10px] text-yellow-300 mb-4">
-SAM
-</div>
+            </div>
 
-<div class="text-2xl leading-relaxed font-bold">
-The central liquidity hub on
-<span class="text-yellow-300">LitVM</span>
-</div>
+        </div>
 
-<button
-class="mt-8 bg-yellow-300 text-black font-black px-8 py-4 rounded-xl text-lg hover:scale-105 transition">
+        <!-- SWAP -->
+        <section id="swapSection" class="space-y-4 mt-4">
 
-LAUNCH APP
+            <!-- INPUT -->
+            <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl">
 
-</button>
+                <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
 
-</div>
+                    <span>Swap</span>
 
-</div>
+                    <div class="flex gap-2 text-yellow-400 font-bold">
 
-</section>
+                        <span>25%</span>
+                        <span>50%</span>
+                        <span>75%</span>
+                        <span>MAX</span>
 
-<!-- SWAP -->
-<section id="swapSection">
+                    </div>
 
-<div class="flex gap-3 mb-5">
+                </div>
 
-<button class="bg-zinc-800 px-6 py-3 rounded-xl border border-zinc-700">
-Swap
-</button>
+                <div class="flex justify-between items-center">
 
-<button class="bg-zinc-950 px-6 py-3 rounded-xl border border-zinc-900 text-zinc-500">
-TWAP
-</button>
+                    <div
+                        class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
 
-<button class="bg-zinc-950 px-6 py-3 rounded-xl border border-zinc-900 text-zinc-500">
-Limit
-</button>
+                        <div class="w-4 h-4 rounded-full bg-yellow-400"></div>
 
-</div>
+                        <span class="font-bold text-xs">
+                            SAM
+                        </span>
 
-<!-- SWAP CARD -->
-<div class="bg-panel rounded-3xl p-5 card-border">
+                    </div>
 
-<div class="flex justify-between mb-4">
+                    <input id="inputAmount" type="number" placeholder="0"
+                        class="bg-transparent outline-none text-right text-2xl w-1/2">
 
-<div class="text-zinc-500">
-Swap
-</div>
+                </div>
 
-<div class="flex gap-2">
+                <div id="samBalance" class="text-[11px] text-zinc-500 mt-2">
+                    0 SAM Balance
+                </div>
 
-<button class="bg-zinc-800 px-3 py-1 rounded">
-25%
-</button>
+            </div>
 
-<button class="bg-zinc-800 px-3 py-1 rounded">
-50%
-</button>
+            <!-- SWITCH -->
+            <div class="flex justify-center -my-5 relative z-10">
 
-<button class="bg-zinc-800 px-3 py-1 rounded">
-MAX
-</button>
+                <div
+                    class="bg-black border-2 border-zinc-800 text-yellow-400 p-2 rounded-lg cursor-pointer">
 
-</div>
+                    ⇅
 
-</div>
+                </div>
 
-<!-- TOKEN -->
-<div class="bg-black rounded-2xl p-4 border border-zinc-800">
+            </div>
 
-<div class="flex justify-between items-center">
+            <!-- OUTPUT -->
+            <div class="bg-[#070709] border border-zinc-800 p-4 rounded-xl">
 
-<div class="flex items-center gap-3">
+                <div class="flex justify-between mb-3 text-[11px] text-zinc-500">
 
-<div class="w-10 h-10 rounded-full bg-yellow-300"></div>
+                    <span>For</span>
 
-<div class="font-bold text-2xl">
-SAM
-</div>
+                    <span>Token Amount</span>
 
-</div>
+                </div>
 
-<input
-id="inputAmount"
-type="number"
-placeholder="0"
-class="bg-transparent outline-none text-right text-4xl w-1/2"/>
+                <div class="flex justify-between items-center">
 
-</div>
+                    <div
+                        class="flex items-center gap-2 bg-zinc-900 px-3 py-2 rounded-lg border border-zinc-800">
 
-<div class="mt-4 text-zinc-500 text-sm">
-0 SAM Balance
-</div>
+                        <div class="w-4 h-4 rounded-full bg-sky-500"></div>
 
-</div>
+                        <span class="font-bold text-xs">
+                            zkLTC
+                        </span>
 
-<!-- ARROW -->
-<div class="flex justify-center -my-4 relative z-20">
+                    </div>
 
-<div class="w-14 h-14 rounded-2xl bg-black border-2 border-zinc-800 flex items-center justify-center text-2xl text-yellow-300">
-⇅
-</div>
+                    <input id="outputAmount" type="number" disabled placeholder="0"
+                        class="bg-transparent outline-none text-right text-2xl w-1/2 text-zinc-500">
 
-</div>
+                </div>
 
-<!-- OUTPUT -->
-<div class="bg-black rounded-2xl p-4 border border-zinc-800">
+                <div id="zkltcBalance" class="text-[11px] text-zinc-500 mt-2">
+                    0 zkLTC Balance
+                </div>
 
-<div class="flex justify-between items-center">
+            </div>
 
-<div class="flex items-center gap-3">
+            <!-- INFO -->
+            <div
+                class="border-l-2 border-yellow-400 bg-zinc-900/20 p-3 rounded-r-lg text-[11px] text-zinc-400 space-y-2">
 
-<div class="w-10 h-10 rounded-full bg-sky-500"></div>
+                <div>
+                    [1] Masukkan jumlah token swap.
+                </div>
 
-<div class="font-bold text-2xl">
-zkLTC
-</div>
+                <div>
+                    [2] Network otomatis LitVM LiteForge.
+                </div>
 
-</div>
+            </div>
 
-<input
-id="outputAmount"
-type="number"
-placeholder="0"
-disabled
-class="bg-transparent outline-none text-right text-4xl w-1/2"/>
+            <!-- FEES -->
+            <div class="flex justify-between text-[11px] text-zinc-500">
 
-</div>
+                <span>FEES ESTIMATE</span>
 
-<div
-id="zkltcBalance"
-class="mt-4 text-zinc-500 text-sm">
+                <span class="text-yellow-400">
+                    0.001 zkLTC
+                </span>
 
-0 zkLTC Balance
+            </div>
 
-</div>
+            <!-- BUTTON -->
+            <button onclick="executeSwap()"
+                class="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black text-xs tracking-widest">
 
-</div>
+                APPROVE & SWAP
 
-<button
-onclick="executeSwap()"
-class="w-full mt-5 bg-yellow-300 text-black py-4 rounded-2xl text-xl font-black hover:scale-[1.01] transition">
+            </button>
 
-APPROVE & SWAP
+        </section>
 
-</button>
+        <!-- LIQUIDITY -->
+        <section id="liquiditySection" class="hidden mt-5">
 
-</div>
+            <div class="bg-[#070709] border border-zinc-800 rounded-xl p-4">
 
-</section>
+                <div class="text-sm text-zinc-300">
+                    Deposit liquidity to earn rewards.
+                </div>
 
-<!-- LIQUIDITY -->
-<section id="liquiditySection" class="hidden mt-8">
+            </div>
 
-<div class="grid grid-cols-2 gap-4">
+        </section>
 
-<div class="bg-panel rounded-2xl p-5 card-border">
+        <!-- VOTES -->
+        <section id="votesSection" class="hidden mt-5">
 
-<div class="text-zinc-500 text-sm">
-TVL
-</div>
+            <div class="bg-[#070709] border border-zinc-800 rounded-xl p-4">
 
-<div class="text-4xl font-black mt-2">
-$29.3M
-</div>
+                <div class="text-sm text-zinc-300">
+                    Voting system coming soon.
+                </div>
 
-</div>
+            </div>
 
-<div class="bg-panel rounded-2xl p-5 card-border">
+        </section>
 
-<div class="text-zinc-500 text-sm">
-VOLUME
-</div>
+        <!-- LOG -->
+        <div id="logConsole"
+            class="hidden mt-4 bg-[#030303] border border-zinc-900 rounded-xl p-3 text-[11px] font-mono text-zinc-500 h-28 overflow-y-auto">
 
-<div class="text-4xl font-black mt-2">
-$59.3M
-</div>
+            [SAM-System]: Ready...
 
-</div>
+        </div>
 
-</div>
+    </main>
 
-</section>
+    <!-- ETHERS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 
-<!-- LOCKS -->
-<section id="locksSection" class="hidden mt-8">
+    <script>
 
-<div class="bg-panel rounded-3xl p-6 card-border">
+        let isConnected = false;
+        let menuOpen = false;
 
-<div class="text-5xl font-black text-yellow-300 mb-4">
-LOCKS
-</div>
+        // NETWORK
+        const LITVM_PARAMS = {
 
-<div class="text-zinc-400 text-xl leading-relaxed">
-Create lock and receive incentives on LitVM ecosystem.
-</div>
+            chainId: "0x1159",
 
-<button class="mt-8 bg-yellow-300 text-black px-8 py-4 rounded-xl font-black text-lg">
-CREATE LOCK
-</button>
+            chainName: "LitVM LiteForge",
 
-</div>
+            rpcUrls: [
+                "https://liteforge.rpc.caldera.xyz/http"
+            ],
 
-</section>
+            nativeCurrency: {
+                name: "zkLTC",
+                symbol: "zkLTC",
+                decimals: 18
+            },
 
-<!-- VOTES -->
-<section id="votesSection" class="hidden mt-8">
+            blockExplorerUrls: [
+                "https://liteforge.explorer.caldera.xyz"
+            ]
 
-<div class="bg-panel rounded-3xl p-6 card-border">
+        };
 
-<div class="text-4xl font-black mb-4">
-VOTES
-</div>
+        // INPUT SYNC
+        const input = document.getElementById("inputAmount");
+        const output = document.getElementById("outputAmount");
 
-<div class="text-zinc-400 text-lg">
-Gauge voting and emission system for SAM ecosystem.
-</div>
+        input.addEventListener("input", (e) => {
 
-</div>
+            output.value = e.target.value;
 
-</section>
+        });
 
-<!-- BRIDGE -->
-<section id="bridgeSection" class="hidden mt-8">
+        // MENU
+        function toggleMenu() {
 
-<div class="bg-panel rounded-3xl p-6 card-border">
+            const menu = document.getElementById("sideMenu");
 
-<div class="text-5xl font-black text-yellow-300 mb-4">
-BRIDGE
-</div>
+            menuOpen = !menuOpen;
 
-<div class="text-zinc-400 text-xl leading-relaxed">
+            if (menuOpen) {
 
-Bridge feature coming soon on LitVM.
+                menu.classList.remove("hidden");
 
-</div>
+            } else {
 
-<button
-class="mt-8 bg-zinc-900 border border-yellow-300/20 text-yellow-300 px-8 py-4 rounded-xl font-black">
+                menu.classList.add("hidden");
 
-UNDER MAINTENANCE
-
-</button>
-
-</div>
-
-</section>
-
-<!-- LOG -->
-<div
-id="logConsole"
-class="hidden mt-8 bg-black border border-zinc-900 rounded-2xl p-4 text-xs text-green-400 h-32 overflow-y-auto">
-
-[SAM SYSTEM]: READY
-
-</div>
-
-<!-- FOOTER -->
-<footer class="text-center text-zinc-600 text-xs tracking-[4px] mt-16 pb-8">
-
-POWERED BY LITVM LITEFORGE
-
-</footer>
-
-</main>
-
-<!-- ETHERS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.min.js"></script>
-
-<script>
-
-let isConnected = false;
-let menuOpen = false;
-
-// MENU
-function toggleMenu(){
-
-    const menu =
-        document.getElementById("sideMenu");
-
-    menuOpen = !menuOpen;
-
-    if(menuOpen){
-        menu.classList.remove("hidden");
-    }else{
-        menu.classList.add("hidden");
-    }
-
-}
-
-// TAB
-function switchTab(tab){
-
-    toggleMenu();
-
-    const sections = [
-        "swapSection",
-        "liquiditySection",
-        "locksSection",
-        "votesSection",
-        "bridgeSection"
-    ];
-
-    sections.forEach(id=>{
-        document.getElementById(id)
-        .classList.add("hidden");
-    });
-
-    if(tab==="swap"){
-        document.getElementById("swapSection")
-        .classList.remove("hidden");
-    }
-
-    if(tab==="liquidity"){
-        document.getElementById("liquiditySection")
-        .classList.remove("hidden");
-    }
-
-    if(tab==="locks"){
-        document.getElementById("locksSection")
-        .classList.remove("hidden");
-    }
-
-    if(tab==="votes"){
-        document.getElementById("votesSection")
-        .classList.remove("hidden");
-    }
-
-    if(tab==="bridge"){
-        document.getElementById("bridgeSection")
-        .classList.remove("hidden");
-    }
-
-}
-
-// INPUT MIRROR
-const input =
-document.getElementById("inputAmount");
-
-const output =
-document.getElementById("outputAmount");
-
-input.addEventListener("input",(e)=>{
-
-    output.value = e.target.value;
-
-});
-
-// CONNECT
-async function connectWallet(){
-
-    const btn =
-        document.getElementById("connectBtn");
-
-    const log =
-        document.getElementById("logConsole");
-
-    try{
-
-        if(!window.ethereum){
-
-            alert(
-                "Buka menggunakan MetaMask / OKX Wallet Browser"
-            );
-
-            return;
-        }
-
-        // CONNECT
-        const accounts =
-            await ethereum.request({
-
-                method:"eth_requestAccounts"
-
-            });
-
-        const address = accounts[0];
-
-        // SWITCH NETWORK
-        try{
-
-            await ethereum.request({
-
-                method:"wallet_switchEthereumChain",
-
-                params:[
-                    {
-                        chainId:"0x1159"
-                    }
-                ]
-
-            });
-
-        }catch(err){
-
-            await ethereum.request({
-
-                method:"wallet_addEthereumChain",
-
-                params:[
-                    {
-                        chainId:"0x1159",
-                        chainName:"LitVM LiteForge",
-                        rpcUrls:[
-                            "https://liteforge.rpc.caldera.xyz/http"
-                        ],
-                        nativeCurrency:{
-                            name:"zkLTC",
-                            symbol:"zkLTC",
-                            decimals:18
-                        },
-                        blockExplorerUrls:[
-                            "https://liteforge.explorer.caldera.xyz"
-                        ]
-                    }
-                ]
-
-            });
+            }
 
         }
 
-        // BALANCE
-        const provider =
-            new ethers.providers.Web3Provider(window.ethereum);
+        // TAB
+        function switchTab(tab) {
 
-        const balanceWei =
-            await provider.getBalance(address);
+            toggleMenu();
 
-        const balance =
-            ethers.utils.formatEther(balanceWei);
+            document.getElementById("swapSection").classList.add("hidden");
+            document.getElementById("swapSubNav").classList.add("hidden");
 
-        document.getElementById(
-            "zkltcBalance"
-        ).innerText =
-            parseFloat(balance).toFixed(4)
-            + " zkLTC Balance";
+            document.getElementById("liquiditySection").classList.add("hidden");
 
-        // SUCCESS
-        isConnected = true;
+            document.getElementById("votesSection").classList.add("hidden");
 
-        btn.innerText =
-            address.slice(0,6)
-            + "..."
-            + address.slice(-4);
+            if (tab === "swap") {
 
-        btn.classList.remove(
-            "text-yellow-300"
-        );
+                document.getElementById("swapSection").classList.remove("hidden");
 
-        btn.classList.add(
-            "text-green-400"
-        );
+                document.getElementById("swapSubNav").classList.remove("hidden");
 
-        log.classList.remove("hidden");
+            }
 
-        log.innerHTML += `
-        <br>
-        CONNECTED:
-        ${address}
-        `;
+            if (tab === "liquidity") {
 
-    }catch(err){
+                document.getElementById("liquiditySection").classList.remove("hidden");
 
-        console.log(err);
+            }
 
-        alert(
-            "Koneksi wallet gagal"
-        );
+            if (tab === "votes") {
 
-    }
+                document.getElementById("votesSection").classList.remove("hidden");
 
-}
+            }
 
-// SWAP
-function executeSwap(){
+        }
 
-    if(!isConnected){
+        // CONNECT WALLET
+        async function connectWallet() {
 
-        alert(
-            "Connect wallet terlebih dahulu!"
-        );
+            const btn = document.getElementById("connectBtn");
 
-        return;
-    }
+            const log = document.getElementById("logConsole");
 
-    const val =
-        parseFloat(input.value);
+            try {
 
-    if(!val || val<=0){
+                if (!window.ethereum) {
 
-        alert(
-            "Masukkan nominal swap!"
-        );
+                    alert("Gunakan MetaMask / OKX / Rabby Wallet");
 
-        return;
-    }
+                    return;
 
-    const log =
-        document.getElementById("logConsole");
+                }
 
-    log.classList.remove("hidden");
+                // CONNECT
+                const accounts = await window.ethereum.request({
+                    method: "eth_requestAccounts"
+                });
 
-    log.innerHTML += `
-    <br>
-    SWAP REQUEST:
-    ${val} SAM
-    `;
+                const wallet = accounts[0];
 
-    setTimeout(()=>{
+                // CHAIN CHECK
+                const currentChain = await window.ethereum.request({
+                    method: "eth_chainId"
+                });
 
-        log.innerHTML += `
-        <br>
-        SUCCESS:
-        ${val} SAM swapped
-        `;
+                // SWITCH NETWORK
+                if (currentChain !== "0x1159") {
 
-        input.value = "";
-        output.value = "";
+                    try {
 
-    },1000);
+                        await window.ethereum.request({
 
-}
+                            method: "wallet_switchEthereumChain",
 
-</script>
+                            params: [{
+                                chainId: "0x1159"
+                            }]
+
+                        });
+
+                    } catch (switchError) {
+
+                        // ADD NETWORK
+                        if (switchError.code === 4902) {
+
+                            await window.ethereum.request({
+
+                                method: "wallet_addEthereumChain",
+
+                                params: [LITVM_PARAMS]
+
+                            });
+
+                        } else {
+
+                            console.log(switchError);
+
+                            alert("Gagal switch network");
+
+                            return;
+
+                        }
+
+                    }
+
+                }
+
+                // PROVIDER
+                const provider = new ethers.BrowserProvider(window.ethereum);
+
+                // BALANCE
+                const balanceWei = await provider.getBalance(wallet);
+
+                const balance = ethers.formatEther(balanceWei);
+
+                // SHORT ADDRESS
+                const shortWallet =
+                    wallet.substring(0, 6) +
+                    "..." +
+                    wallet.substring(wallet.length - 4);
+
+                // BUTTON
+                btn.innerText = shortWallet;
+
+                // BALANCE UI
+                document.getElementById("zkltcBalance").innerText =
+                    parseFloat(balance).toFixed(4) + " zkLTC Balance";
+
+                // STATUS
+                isConnected = true;
+
+                // LOG
+                log.classList.remove("hidden");
+
+                log.innerHTML = `
+                <span class="text-emerald-400">
+                [CONNECTED]: ${shortWallet}
+                </span>
+
+                <br>
+
+                <span class="text-yellow-400">
+                [NETWORK]: LitVM LiteForge
+                </span>
+
+                <br>
+
+                <span class="text-sky-400">
+                [BALANCE]: ${parseFloat(balance).toFixed(4)} zkLTC
+                </span>
+                `;
+
+            } catch (err) {
+
+                console.log(err);
+
+                alert("Koneksi wallet gagal!");
+
+            }
+
+        }
+
+        // SWAP
+        function executeSwap() {
+
+            if (!isConnected) {
+
+                alert("Hubungkan wallet terlebih dahulu!");
+
+                return;
+
+            }
+
+            const val = parseFloat(input.value);
+
+            if (!val || val <= 0) {
+
+                alert("Masukkan jumlah token!");
+
+                return;
+
+            }
+
+            const log = document.getElementById("logConsole");
+
+            log.classList.remove("hidden");
+
+            log.innerHTML += `
+            <br>
+            <span class="text-yellow-400">
+            [PROCESS]: Swap ${val} SAM...
+            </span>
+            `;
+
+            setTimeout(() => {
+
+                log.innerHTML += `
+                <br>
+                <span class="text-emerald-400">
+                [SUCCESS]: Swap berhasil!
+                </span>
+                `;
+
+                input.value = "";
+                output.value = "";
+
+            }, 1500);
+
+        }
+
+    </script>
 
 </body>
+
 </html>
