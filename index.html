@@ -2,335 +2,903 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SAM Finance DEX</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>SAM FINANCE</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 
 <style>
-body { background:#000; color:white; font-family: monospace; }
+
+body{
+background:#000;
+color:white;
+font-family:monospace;
+overflow-x:hidden;
+}
+
+/* SIDEBAR */
+#sidebar{
+position:fixed;
+top:0;
+left:-260px;
+width:260px;
+height:100vh;
+background:#050505;
+border-right:1px solid #222;
+transition:0.3s;
+z-index:999;
+padding-top:90px;
+}
+
+#sidebar.active{
+left:0;
+}
+
+.menuItem{
+padding:20px;
+border-bottom:1px solid #111;
+font-size:22px;
+cursor:pointer;
+}
+
+.menuItem:hover{
+background:#111;
+}
+
+/* CARD */
+.dexCard{
+border:1px solid #333;
+border-radius:24px;
+padding:20px;
+background:linear-gradient(to bottom,#080808,#050505);
+}
+
+/* TOKEN BOX */
+.tokenBox{
+background:#050505;
+border:1px solid #333;
+border-radius:20px;
+padding:15px;
+}
+
+/* INPUT */
+.dexInput{
+background:transparent;
+border:none;
+outline:none;
+width:100%;
+font-size:42px;
+text-align:right;
+color:white;
+}
+
+/* BUTTON */
+.swapBtn{
+background:#d7ff00;
+color:black;
+font-weight:bold;
+width:100%;
+padding:16px;
+border-radius:18px;
+margin-top:20px;
+font-size:18px;
+}
+
+/* SWITCH */
+.middleBtn{
+width:60px;
+height:60px;
+border-radius:50%;
+background:#111;
+border:2px solid #333;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:25px;
+margin:auto;
+margin-top:-15px;
+margin-bottom:-15px;
+position:relative;
+z-index:10;
+cursor:pointer;
+}
+
 </style>
+
 </head>
 
 <body>
 
-<header class="p-4 border-b border-zinc-800 flex justify-between">
-<div>SAM <span style="color:yellow">FINANCE</span></div>
+<!-- SIDEBAR -->
+<div id="sidebar">
 
-<button id="connectBtn" onclick="connectWallet()"
-class="border border-yellow-400 text-yellow-400 px-2 py-1 text-xs rounded">
+<div class="menuItem">SWAP</div>
+<div class="menuItem">PORTFOLIO</div>
+<div class="menuItem">LIQUIDITY</div>
+<div class="menuItem">LOCKS</div>
+<div class="menuItem">VOTES</div>
+<div class="menuItem">INCENTIVES</div>
+
+</div>
+
+<!-- HEADER -->
+<header class="flex items-center justify-between p-5 border-b border-zinc-800">
+
+<div onclick="toggleMenu()"
+class="text-4xl text-yellow-300 cursor-pointer">
+
+☰
+
+</div>
+
+<div class="text-3xl font-bold text-yellow-300">
+
+SAM FINANCE
+
+</div>
+
+<button id="connectBtn"
+onclick="connectWallet()"
+class="bg-zinc-900 px-4 py-3 rounded-xl text-yellow-300 border border-zinc-700">
+
 CONNECT
+
 </button>
+
 </header>
 
-<main class="max-w-md mx-auto p-4">
+<!-- MAIN -->
+<main class="max-w-md mx-auto p-4 mt-5">
 
-<div class="text-xs text-gray-400 mb-2">
-zkLTC: <span id="nativeBal">0</span>
-</div>
-
-<div class="text-xs text-gray-400">
-SAMFI: <span id="balSAMFI">0</span>
-</div>
-
-<div class="text-xs text-gray-400 mb-3">
-WzkLTC: <span id="balWZK">0</span>
-</div>
+<div class="dexCard">
 
 <!-- FROM -->
-<div class="bg-zinc-900 p-3 rounded">
+<div class="tokenBox">
 
-<div class="flex justify-between text-xs">
-From
-<select id="fromToken" class="bg-black border p-1 text-xs">
+<div class="flex justify-between items-center mb-3">
+
+<div class="text-gray-400 text-xl">
+Swap
+</div>
+
+<div class="flex gap-2">
+
+<button onclick="setPercent(25)"
+class="bg-zinc-700 px-3 py-2 rounded">
+25%
+</button>
+
+<button onclick="setPercent(50)"
+class="bg-zinc-700 px-3 py-2 rounded">
+50%
+</button>
+
+<button onclick="setPercent(75)"
+class="bg-zinc-700 px-3 py-2 rounded">
+75%
+</button>
+
+<button onclick="setMax()"
+class="bg-zinc-700 px-3 py-2 rounded">
+MAX
+</button>
+
+</div>
+
+</div>
+
+<div class="flex justify-between items-center gap-3">
+
+<select id="fromToken"
+class="bg-black border border-zinc-700 px-4 py-3 rounded-xl text-xl">
+
 <option value="zkLTC">zkLTC</option>
-<option value="WZK">WzkLTC</option>
+<option value="WzkLTC">WzkLTC</option>
 <option value="SAMFI">SAMFI</option>
+
 </select>
+
+<input id="amount"
+type="number"
+placeholder="0"
+class="dexInput"/>
+
 </div>
 
-<input id="amount" type="number"
-class="w-full mt-2 bg-black border p-2 text-right"
-placeholder="0"/>
+<div class="mt-4 text-gray-400">
+
+Balance:
+<span id="fromBal">0</span>
 
 </div>
 
-<div onclick="swapUI()" class="text-center text-yellow-400 my-3 cursor-pointer">
+</div>
+
+<!-- SWITCH -->
+<div onclick="switchTokens()" class="middleBtn">
+
 ⇅
+
 </div>
 
 <!-- TO -->
-<div class="bg-zinc-900 p-3 rounded">
+<div class="tokenBox pt-8">
 
-<div class="flex justify-between text-xs">
-To
-<select id="toToken" class="bg-black border p-1 text-xs">
+<div class="text-gray-400 text-xl mb-3">
+
+For
+
+</div>
+
+<div class="flex justify-between items-center gap-3">
+
+<select id="toToken"
+class="bg-black border border-zinc-700 px-4 py-3 rounded-xl text-xl">
+
 <option value="SAMFI">SAMFI</option>
-<option value="WZK">WzkLTC</option>
+<option value="WzkLTC">WzkLTC</option>
 <option value="zkLTC">zkLTC</option>
+
 </select>
+
+<input id="out"
+disabled
+placeholder="0"
+class="dexInput"/>
+
 </div>
 
-<input id="out" disabled
-class="w-full mt-2 bg-black border p-2 text-right"/>
+<div class="mt-4 text-gray-400">
+
+Balance:
+<span id="toBal">0</span>
 
 </div>
 
-<button onclick="swap()"
-class="w-full bg-yellow-500 text-black font-bold py-2 mt-4 rounded">
+</div>
+
+<!-- INFO -->
+<div class="mt-4 text-sm text-gray-400">
+
+<div>
+Route:
+<span id="routeText">-</span>
+</div>
+
+<div class="mt-1">
+Price Impact:
+<span id="impact">0%</span>
+</div>
+
+</div>
+
+<!-- BUTTON -->
+<button onclick="swap()" class="swapBtn">
+
 SWAP
+
 </button>
 
-<div id="log" class="text-xs mt-3"></div>
+<!-- STATUS -->
+<div id="status"
+class="mt-5 text-center text-sm text-gray-400">
+
+READY
+
+</div>
+
+</div>
 
 </main>
 
 <script>
 
 // ================= CONFIG =================
-const ROUTER = "0xe351c47c3b96844F46e9808a7D5bBa8101BfFB57";
-const SAMFI  = "0xAC9E151b4048b179Be0CbB23C0c6FC29419061a7";
-const WZK    = "0x60A84eBC3483fEFB251B76Aea5B8458026Ef4bea";
+const ROUTER =
+"0xd87fE5B8Bc2790f54bE4A2706c9b6Ed8b5a47539";
 
-let signer;
-let provider;
+const SAMFI =
+"0xAC9E151b4048b179Be0CbB23C0c6FC29419061a7";
+
+const WzkLTC =
+"0x60A84eBC3483fEFB251B76Aea5B8458026Ef4bea";
+
+// ================= TOKENS =================
+const TOKENS = {
+
+zkLTC: WzkLTC,
+WzkLTC: WzkLTC,
+SAMFI: SAMFI
+
+};
 
 // ================= ABI =================
 const erc20Abi = [
+
 "function approve(address,uint256) returns(bool)",
-"function balanceOf(address) view returns(uint256)",
-"function decimals() view returns(uint8)"
+"function balanceOf(address) view returns(uint256)"
+
 ];
 
 const routerAbi = [
-"function swapExactTokensForTokens(uint256,uint256,address[],address,uint256)",
-"function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint256,uint256,address[],address,uint256)"
+
+"function swapExactTokensForTokens(uint amountIn,uint amountOutMin,address[] calldata path,address to,uint deadline) external returns (uint[] memory amounts)",
+
+"function swapExactETHForTokens(uint amountOutMin,address[] calldata path,address to,uint deadline) external payable returns (uint[] memory amounts)",
+
+"function swapExactTokensForETH(uint amountIn,uint amountOutMin,address[] calldata path,address to,uint deadline) external returns (uint[] memory amounts)",
+
+"function getAmountsOut(uint amountIn,address[] memory path) view returns (uint[] memory amounts)"
+
 ];
 
-// ================= GRAPH =================
-const GRAPH = {
-"zkLTC": ["WZK"],
-"WZK": ["zkLTC", "SAMFI"],
-"SAMFI": ["WZK"]
-};
+// ================= PROVIDER =================
+let provider;
+let signer;
 
-// ================= FIND PATH =================
-function findPath(from, to, visited = new Set()) {
-if (from === to) return [from];
+// ================= MENU =================
+function toggleMenu(){
 
-visited.add(from);
+document.getElementById("sidebar")
+.classList.toggle("active");
 
-for (let n of (GRAPH[from] || [])) {
-if (visited.has(n)) continue;
-
-let p = findPath(n, to, visited);
-if (p) return [from, ...p];
-}
-
-return null;
-}
-
-// ================= AMM (SIMPLIFIED) =================
-let RESERVES = {
-"WZK-SAMFI": { x: 1000000, y: 1000000000 }
-};
-
-function getAmountOut(amountIn, reserveIn, reserveOut){
-const fee = 0.003;
-const amtIn = amountIn * (1 - fee);
-return (amtIn * reserveOut) / (reserveIn + amtIn);
-}
-
-// ================= MULTI HOP =================
-function calc(amount, path){
-
-let amt = parseFloat(amount);
-
-for(let i=0;i<path.length-1;i++){
-
-let a = path[i];
-let b = path[i+1];
-
-if((a==="WZK" && b==="SAMFI") || (a==="SAMFI" && b==="WZK")){
-
-let pool = RESERVES["WZK-SAMFI"];
-
-if(a==="WZK"){
-amt = getAmountOut(amt, pool.x, pool.y);
-} else {
-amt = getAmountOut(amt, pool.y, pool.x);
-}
-
-}
-
-}
-
-return amt;
-}
-
-// ================= LOG =================
-function setLog(msg,type="info"){
-
-let el = document.getElementById("log");
-
-let color="white";
-if(type==="success") color="lightgreen";
-if(type==="error") color="red";
-if(type==="pending") color="orange";
-
-el.innerHTML = `<span style="color:${color}">${msg}</span>`;
 }
 
 // ================= CONNECT =================
 async function connectWallet(){
 
-if(!window.ethereum) return alert("Install wallet");
+if(!window.ethereum)
+return alert("Install wallet");
 
-provider = new ethers.BrowserProvider(window.ethereum);
-signer = await provider.getSigner();
+provider =
+new ethers.BrowserProvider(window.ethereum);
 
-const addr = await signer.getAddress();
+signer =
+await provider.getSigner();
 
-document.getElementById("connectBtn").innerText =
+const addr =
+await signer.getAddress();
+
+document.getElementById("connectBtn")
+.innerText =
 addr.slice(0,6)+"..."+addr.slice(-4);
 
-loadAll();
-setInterval(loadAll,5000);
+loadBalances();
+
+setInterval(loadBalances,4000);
+
 }
 
-// ================= LOAD BALANCE =================
-async function loadAll(){
+// ================= BALANCE =================
+async function loadBalances(){
 
 if(!signer) return;
 
-const user = await signer.getAddress();
+const user =
+await signer.getAddress();
 
-const sam = new ethers.Contract(SAMFI, erc20Abi, provider);
-const wzk = new ethers.Contract(WZK, erc20Abi, provider);
+const from =
+document.getElementById("fromToken").value;
 
-const b1 = await sam.balanceOf(user);
-const b2 = await wzk.balanceOf(user);
-const b3 = await provider.getBalance(user);
+const to =
+document.getElementById("toToken").value;
 
-document.getElementById("balSAMFI").innerText =
-Number(ethers.formatEther(b1)).toFixed(4);
+// FROM
+if(from==="zkLTC"){
 
-document.getElementById("balWZK").innerText =
-Number(ethers.formatEther(b2)).toFixed(4);
+const native =
+await provider.getBalance(user);
 
-document.getElementById("nativeBal").innerText =
-Number(ethers.formatEther(b3)).toFixed(4);
+const token =
+new ethers.Contract(
+WzkLTC,
+erc20Abi,
+provider
+);
+
+const wrapped =
+await token.balanceOf(user);
+
+const total =
+parseFloat(
+ethers.formatEther(native)
+) +
+parseFloat(
+ethers.formatEther(wrapped)
+);
+
+document.getElementById("fromBal")
+.innerText =
+total.toFixed(4);
+
+}else{
+
+const token =
+new ethers.Contract(
+TOKENS[from],
+erc20Abi,
+provider
+);
+
+const bal =
+await token.balanceOf(user);
+
+document.getElementById("fromBal")
+.innerText =
+parseFloat(
+ethers.formatEther(bal)
+).toFixed(4);
+
 }
 
-// ================= UI SWAP =================
-function swapUI(){
+// TO
+if(to==="zkLTC"){
 
-let a=document.getElementById("fromToken").value;
-let b=document.getElementById("toToken").value;
+const native =
+await provider.getBalance(user);
 
-document.getElementById("fromToken").value=b;
-document.getElementById("toToken").value=a;
+const token =
+new ethers.Contract(
+WzkLTC,
+erc20Abi,
+provider
+);
 
-document.getElementById("out").value =
-document.getElementById("amount").value || "";
+const wrapped =
+await token.balanceOf(user);
+
+const total =
+parseFloat(
+ethers.formatEther(native)
+) +
+parseFloat(
+ethers.formatEther(wrapped)
+);
+
+document.getElementById("toBal")
+.innerText =
+total.toFixed(4);
+
+}else{
+
+const token =
+new ethers.Contract(
+TOKENS[to],
+erc20Abi,
+provider
+);
+
+const bal =
+await token.balanceOf(user);
+
+document.getElementById("toBal")
+.innerText =
+parseFloat(
+ethers.formatEther(bal)
+).toFixed(4);
+
+}
+
+}
+
+// ================= SWITCH =================
+function switchTokens(){
+
+const a =
+document.getElementById("fromToken");
+
+const b =
+document.getElementById("toToken");
+
+const temp = a.value;
+
+a.value = b.value;
+b.value = temp;
+
+liveQuote();
+loadBalances();
+
 }
 
 // ================= LIVE QUOTE =================
-document.getElementById("amount").addEventListener("input",(e)=>{
+async function liveQuote(){
 
-let amount=e.target.value;
-let from=document.getElementById("fromToken").value;
-let to=document.getElementById("toToken").value;
+if(!provider) return;
 
-if(!amount) return;
+const amount =
+document.getElementById("amount").value;
 
-let path=findPath(from,to);
+const from =
+document.getElementById("fromToken").value;
 
-if(!path){
-document.getElementById("out").value="No route";
+const to =
+document.getElementById("toToken").value;
+
+if(!amount){
+
+document.getElementById("out").value="";
 return;
+
 }
-
-let out=calc(amount,path);
-
-document.getElementById("out").value=Number(out).toFixed(6);
-
-});
-
-// ================= SWAP CORE FIXED =================
-async function swap(){
-
-if(!signer) return alert("connect wallet");
-
-let amount=document.getElementById("amount").value;
-let from=document.getElementById("fromToken").value;
-let to=document.getElementById("toToken").value;
-
-let user=await signer.getAddress();
-
-setLog("Processing...","pending");
 
 try{
 
-let path=findPath(from,to);
-
-if(!path){
-setLog("No route found","error");
-return;
-}
-
-// wrap zkLTC
-if(from==="zkLTC"){
-await signer.sendTransaction({
-to:WZK,
-value:BigInt(Math.floor(amount*1e18))
-});
-path[0]="WZK";
-}
-
-// approve
-const token=new ethers.Contract(path[0],erc20Abi,signer);
-await token.approve(ROUTER,BigInt(Math.floor(amount*1e18)));
-
-// router
-const router=new ethers.Contract(ROUTER,routerAbi,signer);
-
-const deadline=Math.floor(Date.now()/1000)+600;
-
-let tx;
-
-try{
-tx=await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-BigInt(Math.floor(amount*1e18)),
-0,
-path,
-user,
-deadline
+const router =
+new ethers.Contract(
+ROUTER,
+routerAbi,
+provider
 );
-}catch(e){
-tx=await router.swapExactTokensForTokens(
-BigInt(Math.floor(amount*1e18)),
-0,
-path,
-user,
-deadline
+
+const path = [
+TOKENS[from],
+TOKENS[to]
+];
+
+document.getElementById("routeText")
+.innerText =
+from + " → " + to;
+
+const amounts =
+await router.getAmountsOut(
+ethers.parseEther(amount),
+path
 );
-}
 
-setLog("Waiting confirmation...","pending");
+const out =
+ethers.formatEther(
+amounts[1]
+);
 
-await tx.wait();
+document.getElementById("out").value =
+parseFloat(out).toFixed(6);
 
-setLog("SWAP SUCCESS","success");
+// fake impact simple
+const impact =
+(amount * 0.05).toFixed(2);
 
-loadAll();
+document.getElementById("impact")
+.innerText =
+impact + "%";
 
 }catch(e){
 
 console.log(e);
-setLog("SWAP FAILED (check liquidity / router)","error");
+
+document.getElementById("out").value =
+"0";
+
+}
+
+}
+
+document.getElementById("amount")
+.addEventListener("input",liveQuote);
+
+document.getElementById("fromToken")
+.addEventListener("change",()=>{
+
+liveQuote();
+loadBalances();
+
+});
+
+document.getElementById("toToken")
+.addEventListener("change",()=>{
+
+liveQuote();
+loadBalances();
+
+});
+
+// ================= PERCENT =================
+async function setPercent(p){
+
+if(!signer) return;
+
+const from =
+document.getElementById("fromToken").value;
+
+const user =
+await signer.getAddress();
+
+let total;
+
+if(from==="zkLTC"){
+
+const native =
+await provider.getBalance(user);
+
+const token =
+new ethers.Contract(
+WzkLTC,
+erc20Abi,
+provider
+);
+
+const wrapped =
+await token.balanceOf(user);
+
+total =
+parseFloat(
+ethers.formatEther(native)
+) +
+parseFloat(
+ethers.formatEther(wrapped)
+);
+
+}else{
+
+const token =
+new ethers.Contract(
+TOKENS[from],
+erc20Abi,
+provider
+);
+
+const bal =
+await token.balanceOf(user);
+
+total =
+parseFloat(
+ethers.formatEther(bal)
+);
+
+}
+
+document.getElementById("amount").value =
+(total*(p/100)).toFixed(4);
+
+liveQuote();
+
+}
+
+// ================= MAX =================
+async function setMax(){
+
+if(!signer) return;
+
+const from =
+document.getElementById("fromToken").value;
+
+const user =
+await signer.getAddress();
+
+let total;
+
+if(from==="zkLTC"){
+
+const native =
+await provider.getBalance(user);
+
+const token =
+new ethers.Contract(
+WzkLTC,
+erc20Abi,
+provider
+);
+
+const wrapped =
+await token.balanceOf(user);
+
+total =
+parseFloat(
+ethers.formatEther(native)
+) +
+parseFloat(
+ethers.formatEther(wrapped)
+);
+
+}else{
+
+const token =
+new ethers.Contract(
+TOKENS[from],
+erc20Abi,
+provider
+);
+
+const bal =
+await token.balanceOf(user);
+
+total =
+parseFloat(
+ethers.formatEther(bal)
+);
+
+}
+
+document.getElementById("amount").value =
+total.toFixed(4);
+
+liveQuote();
+
+}
+
+// ================= SWAP =================
+async function swap(){
+
+if(!signer)
+return alert("connect wallet");
+
+try{
+
+document.getElementById("status")
+.innerText =
+"PROCESSING...";
+
+const amount =
+document.getElementById("amount").value;
+
+const from =
+document.getElementById("fromToken").value;
+
+const to =
+document.getElementById("toToken").value;
+
+if(!amount || amount <= 0){
+
+alert("input amount");
+return;
+
+}
+
+const user =
+await signer.getAddress();
+
+const router =
+new ethers.Contract(
+ROUTER,
+routerAbi,
+signer
+);
+
+const deadline =
+Math.floor(Date.now()/1000)+600;
+
+const path = [
+TOKENS[from],
+TOKENS[to]
+];
+
+// ================= zkLTC -> TOKEN =================
+if(from==="zkLTC"){
+
+document.getElementById("status")
+.innerText =
+"WRAPPING zkLTC...";
+
+const tx =
+await router.swapExactETHForTokens(
+
+0,
+path,
+user,
+deadline,
+
+{
+value: ethers.parseEther(amount)
+}
+
+);
+
+document.getElementById("status")
+.innerText =
+"WAITING CONFIRMATION...";
+
+await tx.wait();
+
+}
+
+// ================= TOKEN -> zkLTC =================
+else if(to==="zkLTC"){
+
+const token =
+new ethers.Contract(
+TOKENS[from],
+erc20Abi,
+signer
+);
+
+document.getElementById("status")
+.innerText =
+"APPROVING TOKEN...";
+
+const txApprove =
+await token.approve(
+ROUTER,
+ethers.parseEther(amount)
+);
+
+await txApprove.wait();
+
+document.getElementById("status")
+.innerText =
+"UNWRAPPING zkLTC...";
+
+const tx =
+await router.swapExactTokensForETH(
+
+ethers.parseEther(amount),
+0,
+path,
+user,
+deadline
+
+);
+
+document.getElementById("status")
+.innerText =
+"WAITING CONFIRMATION...";
+
+await tx.wait();
+
+}
+
+// ================= TOKEN -> TOKEN =================
+else{
+
+const token =
+new ethers.Contract(
+TOKENS[from],
+erc20Abi,
+signer
+);
+
+document.getElementById("status")
+.innerText =
+"APPROVING TOKEN...";
+
+const txApprove =
+await token.approve(
+ROUTER,
+ethers.parseEther(amount)
+);
+
+await txApprove.wait();
+
+document.getElementById("status")
+.innerText =
+"SWAPPING TOKENS...";
+
+const tx =
+await router.swapExactTokensForTokens(
+
+ethers.parseEther(amount),
+0,
+path,
+user,
+deadline
+
+);
+
+document.getElementById("status")
+.innerText =
+"WAITING CONFIRMATION...";
+
+await tx.wait();
+
+}
+
+document.getElementById("status")
+.innerText =
+"✅ SWAP SUCCESS";
+
+document.getElementById("amount").value="";
+document.getElementById("out").value="";
+
+loadBalances();
+
+}catch(e){
+
+console.log(e);
+
+document.getElementById("status")
+.innerText =
+"❌ SWAP FAILED";
 
 }
 
